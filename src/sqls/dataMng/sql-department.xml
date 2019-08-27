@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="department">
+
+	<typeAlias alias="department" type="com.kpc.eos.model.dataMng.DepartmentModel" />
+	<select id="getDepartmentList" resultClass="department">
+		SELECT  d.dept_id 		deptId,
+				d.account_yn 	accountYn,
+				d.address 		address,
+				d.create_by 	createBy,
+				d.create_date 	createDate,
+				d.dept_name 	deptName,
+				d.dept_no 		deptNo,
+				d.note 			note,
+				d.old_dept_id 	oldDeptId,
+				d.state 		state,
+				d.tel_no 		telNo,
+				d.upper_dept_id upperDeptId,
+				d.user_id 		userId,
+				d.state			state
+		  FROM  eos_dept_new d
+		 WHERE  d.user_id = #userId#
+	  ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalCountDeptList" resultClass="Integer">
+		SELECT  COUNT(*)	AS cnt
+		  FROM  eos_dept_new d
+		 WHERE  d.user_id = #userId#
+	</select>
+	
+	<select id="getDepartment" resultClass="department">
+		SELECT  d.dept_id 		deptId,
+				d.account_yn 	accountYn,
+				d.address 		address,
+				d.create_by 	createBy,
+				d.create_date 	createDate,
+				d.dept_name 	deptName,
+				d.dept_no 		deptNo,
+				d.note 			note,
+				d.old_dept_id 	oldDeptId,
+				d.state 		state,
+				d.tel_no 		telNo,
+				d.upper_dept_id upperDeptId,
+				d.user_id 		userId
+		  FROM  eos_dept_new d
+		 WHERE  d.dept_id = #deptId#
+	</select>
+	
+	<select id="getDepartmentListByUserId" resultClass="department">
+		SELECT  d.dept_id 		deptId,
+				d.account_yn 	accountYn,
+				d.address 		address,
+				d.create_by 	createBy,
+				d.create_date 	createDate,
+				d.dept_name 	deptName,
+				d.dept_no 		deptNo,
+				d.note 			note,
+				d.old_dept_id 	oldDeptId,
+				d.state 		state,
+				d.tel_no 		telNo,
+				d.upper_dept_id upperDeptId,
+				d.user_id 		userId,
+				CONCAT('(', d.dept_no, ') ', d.dept_name) deptFullName,
+				d.state			state
+		  FROM  eos_dept_new d
+		 WHERE  d.user_id = #userId#
+		   AND  d.state = 'ST0001'
+	</select>
+	
+	<update id="updateDepartment">
+		UPDATE  eos_dept_new
+		   SET  USER_ID 		= #userId#,
+				DEPT_NO 		= #deptNo#,
+				DEPT_NAME 		= #deptName#,
+				UPPER_DEPT_ID 	= #upperDeptId#,
+				ACCOUNT_YN 		= #accountYn#,
+				ADDRESS 		= #address#,
+				TEL_NO 			= #telNo#,
+				NOTE 			= #note#,
+				STATE 			= #state#,
+				UPDATE_DATE 	= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				UPDATE_BY 		= #updateBy#,
+				OLD_DEPT_ID 	= #oldDeptId#
+		 WHERE 
+				DEPT_ID = #deptId#
+	</update>
+	
+	<insert id="insertDepartment">
+		INSERT INTO eos_dept_new
+		(
+	   		DEPT_ID, 
+			USER_ID, 
+			DEPT_NO, 
+			DEPT_NAME, 
+			UPPER_DEPT_ID, 
+			ACCOUNT_YN, 
+			ADDRESS, 
+			TEL_NO, 
+			NOTE, 
+			STATE, 
+			CREATE_DATE, 
+			CREATE_BY, 
+			UPDATE_DATE, 
+			UPDATE_BY, 
+			OLD_DEPT_ID
+		)
+		VALUES
+		(
+			get_tbl_next_id_value('eos_dept_new'), 
+			#userId#, 
+			#deptNo#, 
+			#deptName#, 
+			#upperDeptId#, 
+			#accountYn#, 
+			#address#, 
+			#telNo#, 
+			#note#, 
+			#state#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			#oldDeptId#	
+		)
+	</insert>
+	
+	<select id="checkExistDeparment" resultClass="Integer">
+		SELECT  DISTINCT 1
+		  FROM  eos_dept_new
+		 WHERE  user_id = #userId#
+		   AND  dept_no = #deptNo#
+	   <isNotEmpty property="deptId" prepend="AND">
+	   			dept_id != #deptId#
+	   </isNotEmpty>
+	</select>
+</sqlMap>

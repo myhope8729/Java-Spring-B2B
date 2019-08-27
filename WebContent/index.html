@@ -1,0 +1,13 @@
+<html>
+<script>
+var loc = document.location.toString();
+// remove 'http://'
+var domainOnly = loc.substring(loc.indexOf("//")+2);
+if (domainOnly.indexOf("/") != -1) {
+// remove path
+        domainOnly= domainOnly.substring(0,domainOnly.indexOf("/"));
+}
+var toUrl = "https://"+domainOnly+"/index.jsp";
+document.location = toUrl;
+</script>
+</html>

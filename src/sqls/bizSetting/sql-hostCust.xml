@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="hostcust">
+
+	<typeAlias alias="hostCust" type="com.kpc.eos.model.bizSetting.HostCustModel" />
+	<typeAlias alias="payType" type="com.kpc.eos.model.bizSetting.PayTypeModel" />
+	
+	<select id="getCustSettingList" resultClass="hostCust">
+		SELECT  a.host_id								AS hostUserId,
+				a.cust_id								AS custUserId,
+				b.user_no								AS custUserNo,
+				b.user_name								AS custUserName,
+				a.custtype_id							AS custTypeId,
+				(SELECT  custtype_name
+				   FROM  eos_custtype_new
+				  WHERE  custtype_id = a.custtype_id)	AS custTypeName,
+				a.distribute_seq_no						AS distrobuteSeqNo,
+				(SELECT  c1
+				   FROM  eos_pdat_line_new
+				  WHERE  user_id = a.host_id
+				    AND  code_id = 'BD0002'
+				    AND  seq_no	 = a.distribute_seq_no)	AS distributeName,
+				a.distribute_no							AS distributeNo,
+				a.state									AS state
+		  FROM  eos_hostcust_new 	a,
+		  		eos_user_new	 	b
+		 WHERE  a.cust_id = b.user_id
+		   AND  a.host_id = #hostId#
+			<isNotEmpty property="custTypeId" prepend="AND">
+				a.custtype_id = #custTypeId#
+			</isNotEmpty>
+			<isNotEmpty property="empId" prepend="AND">
+				a.emp_id = #empId#
+			</isNotEmpty>
+			<isNotEmpty property="chelp" prepend="AND">
+				b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	  ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalCountCustSettingList" resultClass="integer">
+		SELECT  COUNT(*)	AS cnt
+		  FROM  eos_hostcust_new 	a,
+		  		eos_user_new	 	b
+		 WHERE  a.cust_id = b.user_id
+		   AND  a.host_id = #hostId#
+			<isNotEmpty property="custTypeId" prepend="AND">
+				a.custtype_id = #custTypeId#
+			</isNotEmpty>
+			<isNotEmpty property="empId" prepend="AND">
+				a.emp_id = #empId#
+			</isNotEmpty>
+			<isNotEmpty property="chelp" prepend="AND">
+				b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	</select>
+	
+	<select id="getPayTypeList" resultClass="payType">
+		SELECT  a.paytype_id									AS payTypeId,
+				CASE WHEN a.priv_yn = 'N' THEN 'Y'
+					 WHEN b.paytype_id IS NOT NULL THEN 'Y'
+					 ELSE 'N' END								AS payTypeChecked,
+				a.paytype_name									AS payTypeName,
+				a.priv_yn										AS privYn
+		  FROM  eos_paytype_new a
+		  LEFT OUTER JOIN eos_custpaytype_new b ON (a.paytype_id = b.paytype_id AND b.cust_id   = #custId#)
+		 WHERE  a.user_id = #hostId#
+		   AND  a.state = 'ST0001'
+	</select>
+	
+	<select id="getCustSetting" resultClass="hostCust">
+		SELECT  a.host_id									AS hostUserId,
+				a.cust_id									AS custUserId,
+				b.user_no									AS custUserNo,
+				b.user_name									AS custUserName,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = b.location_id)		AS custLocationName,
+				b.address									AS custAddress,
+				b.contact_name								AS custContactName,
+				b.tel_no									AS custTelNo,
+				b.mobile_no									AS custMobileNo,
+				a.distribute_seq_no							AS distributeSeqNo,
+				a.distribute_no								AS distributeNo,
+				a.item_desc_seq_no							AS priceColSeqNo,
+				a.price_col									AS priceColName,
+				a.price_desc								AS priceDesc,
+				a.custtype_id								AS custTypeId,
+				a.clerkno									AS clerkNo,
+				a.emp_id									AS empId,
+				a.car_seq_no								AS carSeqNo,
+				a.cust_short_name							AS custShortName,
+				a.psql										AS psql,
+				a.state										AS state
+		  FROM  eos_hostcust_new a,
+		   		eos_user_new	 b
+		 WHERE  a.cust_id = b.user_id
+		   AND  a.host_id = #hostId#
+		   AND  a.cust_id = #custId#
+	</select>
+	
+	<select id="getCustListForCopymark" resultClass="hostCust">
+		SELECT  a.cust_id									AS custUserId,
+				b.user_no									AS custUserNo,
+				a.cust_short_name							AS custShortName,
+				(SELECT  c1 
+				   FROM  eos_pdat_line_new
+				  WHERE  user_id = #hostId#
+				    AND  seq_no  = a.distribute_seq_no
+				    AND  code_id = 'BD0002')				AS distributeName,
+				a.distribute_no								AS distributeNo
+		  FROM  eos_hostcust_new a,
+		  		eos_user_new	 b
+		 WHERE  a.cust_id = b.user_id
+		   AND  a.host_id = #hostId#
+		   AND  a.state   = 'ST0001'
+		 ORDER BY distributeName, distributeNo
+	</select>
+	
+	<delete id="deleteCustPayType">
+		DELETE FROM eos_custpaytype_new
+		 WHERE host_id = #hostUserId#
+		   AND cust_id = #custUserId#
+	</delete>
+	
+	
+	<insert id="insertCustPayType">
+		INSERT INTO eos_custpaytype_new
+			( host_id,			cust_id,			paytype_id,			create_date,		create_by )
+		SELECT 	#hostUserId#,	#custUserId#,		paytype_id,			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),  #createBy#
+		  FROM  eos_paytype_new
+		 WHERE  paytype_id IN <iterate property="payTypeId" open="(" close=")" conjunction=",">#payTypeId[]#</iterate>
+	</insert>
+	
+	<update id="updateCustSetting">
+		UPDATE  eos_hostcust_new
+		   SET  cust_short_name 	= #custShortName#,
+		   		item_desc_seq_no	= #priceColSeqNo#,
+		   		price_col			= (SELECT property_name FROM eos_item_desc_new WHERE user_id = #hostUserId# AND seq_no = #priceColSeqNo#),
+		   		price_desc 			= (SELECT property_desc FROM eos_item_desc_new WHERE user_id = #hostUserId# AND seq_no = #priceColSeqNo#),
+		   		custtype_id 		= #custTypeId#,
+		   		distribute_seq_no 	= #distributeSeqNo#,
+		   		distribute_no		= #distributeNo#,
+		   		car_seq_no			= #carSeqNo#,
+		   		emp_id				= #empId#,
+		   		state				= 'ST0001',
+		   		update_date			= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by			= #updateBy#
+		 WHERE  host_id = #hostUserId#
+		   AND  cust_id = #custUserId#
+	</update>
+	
+	
+	<update id="disableHostCustSetting">
+		UPDATE  eos_hostcust_new
+		   SET  state 	= 'ST0002'
+		 WHERE  host_id = #hostUserId#
+	</update>
+	
+	<select id="getHostSettingList" resultClass="hostCust">
+		SELECT  a.host_id									AS hostUserId,
+				a.cust_id									AS custUserId,
+				b.user_no									AS hostUserNo,
+				b.user_name									AS hostUserName,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = b.location_id)		AS hostLocationName,
+				b.contact_name								AS hostContactName,
+				b.tel_no									AS hostTelNo,
+				a.state										AS state
+		  FROM  eos_hostcust_new a,
+		  		eos_user_new	 b
+		 WHERE  a.host_id = b.user_id
+		   AND  a.cust_id = #custId#
+		   AND  (b.user_kind = 'UK0002' OR b.user_kind = 'UK0003')
+		   <isNotEmpty property="chelp" prepend="AND">
+				 b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	  	 ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalCountHostSettingList" resultClass="Integer">
+		SELECT  COUNT(*)	AS cnt
+		  FROM  eos_hostcust_new a,
+		  		eos_user_new	 b
+		 WHERE  a.host_id = b.user_id
+		   AND  a.cust_id = #custId#
+		   AND  (b.user_kind = 'UK0002' OR b.user_kind = 'UK0003')
+		   <isNotEmpty property="chelp" prepend="AND">
+				 b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	</select>
+	
+	<select id="getHostListForSet" resultClass="hostCust">
+		SELECT  (SELECT code_name FROM eos_code_new WHERE code_id = b.type1) 	AS bizAreaType,
+				user_id															AS hostUserId,
+				user_no														 	AS hostUserNo,
+				user_name														AS hostUserName,
+				contact_name													AS hostContactName,
+				tel_no															AS hostTelNo,
+				b.create_date													AS createDate,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = b.location_id)							AS hostLocationName
+	      FROM  eos_user_new b
+	     WHERE  b.user_kind IN ('UK0002', 'UK0003')
+	       AND  b.user_id NOT IN (SELECT host_id FROM eos_hostcust_new WHERE cust_id = #custId#)
+	      	<isNotEmpty property="chelp" prepend="AND">
+				b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+			<isNotEmpty property="bizAreaTypeCd" prepend="AND">
+				b.type1 = #bizAreaTypeCd#
+			</isNotEmpty>
+		 ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalHostList" resultClass="Integer">
+		SELECT  COUNT(*) cnt
+	      FROM  eos_user_new b
+	     WHERE  b.user_kind IN ('UK0002', 'UK0003')
+	       AND  b.user_id NOT IN (SELECT host_id FROM eos_hostcust_new WHERE cust_id = #custId#)
+	      	<isNotEmpty property="chelp" prepend="AND">
+				b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+			<isNotEmpty property="bizAreaTypeCd" prepend="AND">
+				b.type1 = #bizAreaTypeCd#
+			</isNotEmpty>
+	</select>
+	
+	<select id="getHostList" resultClass="hostCust">
+		SELECT  a.host_id									AS hostUserId,
+				a.cust_id									AS custUserId,
+				b.user_no									AS hostUserNo,
+				b.user_name									AS hostUserName
+		  FROM  eos_hostcust_new a,
+		  		eos_user_new	 b
+		 WHERE  a.host_id = b.user_id
+		   AND  a.cust_id = #custId#
+		   AND  (b.user_kind = 'UK0002' OR b.user_kind = 'UK0003')
+	</select>
+	
+	
+	<select id="getHostListForOrder" resultClass="hostCust">
+		SELECT  a.host_id									AS hostUserId,
+				a.cust_id									AS custUserId,
+				b.user_no									AS hostUserNo,
+				b.user_name									AS hostUserName,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = b.location_id)		AS hostLocationName,
+				b.contact_name								AS hostContactName,
+				b.tel_no									AS hostTelNo,
+				a.price_col									AS priceColName,
+				a.price_desc								AS priceDesc,
+				a.custtype_id								AS custTypeId,
+				a.state										AS state
+		  FROM  eos_hostcust_new a,
+		  		eos_user_new	 b
+		 WHERE  a.host_id = b.user_id
+			AND a.state = 'ST0001'
+			AND (b.user_kind = 'UK0002' OR b.user_kind = 'UK0003')
+		   	<isNotEmpty property="custId" prepend="AND">
+		   		a.cust_id = #custId#
+			</isNotEmpty>
+			<isNotEmpty property="hostId" prepend="AND">
+		   		a.host_id = #hostId#
+			</isNotEmpty>
+			<isNotEmpty property="chelp" prepend="AND">
+				 b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	  	 ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="countHostListForOrder" resultClass="integer">
+		SELECT  count(*) as cnt
+		  FROM  eos_hostcust_new a,
+		  		eos_user_new	 b
+		 WHERE  a.host_id = b.user_id
+		 	AND a.state = 'ST0001'
+		 	AND (b.user_kind = 'UK0002' OR b.user_kind = 'UK0003')
+		   	<isNotEmpty property="custId" prepend="AND">
+		   		a.cust_id = #custId#
+			</isNotEmpty>
+			<isNotEmpty property="hostId" prepend="AND">
+		   		a.host_id = #hostId#
+			</isNotEmpty>
+			<isNotEmpty property="chelp" prepend="AND">
+				 b.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	</select>
+	
+	
+	<insert id="insertHostList">
+		INSERT INTO eos_hostcust_new
+		  (
+		  		host_id,			cust_id,
+		  		item_desc_seq_no,
+		  		price_col,
+		  		price_desc,
+		  		custtype_id,
+		  		create_date, create_by,
+		  		update_date, update_by
+		  )
+		VALUES
+		  (
+		  		#hostUserId#,		#custUserId#,
+		  		(SELECT seq_no FROM eos_item_desc_new WHERE user_id = #hostUserId# AND property_type_cd = 'PT0002' AND property_value='Y'),
+		  		(SELECT property_name FROM eos_item_desc_new WHERE user_id = #hostUserId# AND property_type_cd = 'PT0002' AND property_value='Y'),
+		  		(SELECT property_desc FROM eos_item_desc_new WHERE user_id = #hostUserId# AND property_type_cd = 'PT0002' AND property_value='Y'),
+		  		CASE WHEN (SELECT COUNT(*) FROM eos_custtype_new WHERE user_id = #hostUserId#) >= 2 THEN NULL 
+		  		     ELSE (SELECT custtype_id FROM eos_custtype_new WHERE user_id = #hostUserId#) END,
+		  		DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,
+		  		DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#
+		  )
+	</insert>
+		
+	<delete id="deleteHost">
+		DELETE FROM eos_hostcust_new WHERE host_id = #hostId# AND cust_id = #custId#
+	</delete>
+	
+	
+	<select id="getHostCustSetting" resultClass="hostCust">
+		SELECT  a.host_id									AS hostUserId,
+		
+				a.cust_id									AS custUserId,
+				cust.user_no								AS custUserNo,
+				cust.user_name								AS custUserName,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = cust.location_id)	AS custLocationName,
+				cust.address								AS custAddress,
+				cust.contact_name							AS custContactName,
+				cust.tel_no									AS custTelNo,
+				cust.mobile_no								AS custMobileNo,
+				
+				host.user_no								AS hostUserNo,
+				host.user_name								AS hostUserName,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = host.location_id)	AS hostLocationName,
+				host.address								AS hostAddress,
+				host.contact_name							AS hostContactName,
+				host.tel_no									AS hostTelNo,
+				host.mobile_no								AS hostMobileNo,
+				
+				a.distribute_seq_no							AS distributeSeqNo,
+				a.distribute_no								AS distributeNo,
+				a.item_desc_seq_no							AS priceColSeqNo,
+				a.price_col									AS priceColName,
+				a.price_desc								AS priceDesc,
+				a.custtype_id								AS custTypeId,
+				(SELECT  custtype_name
+				   FROM  eos_custtype_new
+				  WHERE  custtype_id = a.custtype_id)		AS custTypeName,
+				a.clerkno									AS clerkNo,
+				a.emp_id									AS empId,
+				a.car_seq_no								AS carSeqNo,
+				a.cust_short_name							AS custShortName,
+				a.psql										AS psql,
+				a.state										AS state,
+				
+				ct.psql										AS custtypePsql
+		  FROM  eos_hostcust_new a
+	 LEFT JOIN  eos_custtype_new ct ON a.custtype_id = ct.custtype_id,
+		  		eos_user_new	 cust,
+		   		eos_user_new	 host
+		 WHERE  a.cust_id = cust.user_id AND a.host_id = host.user_id
+		   AND  a.host_id = #hostId#
+		   AND  a.cust_id = #custId#
+		   AND  (host.user_kind = 'UK0002' OR host.user_kind = 'UK0003') 
+	</select>
+	
+	<select id="getHostCustList" resultClass="hostCust">
+		SELECT  a.host_id									AS hostUserId,
+		
+				a.cust_id									AS custUserId,
+				
+				<isNotEmpty property="hostId" prepend="">
+				cust.user_no								AS custUserNo,
+				cust.user_name								AS custUserName,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = cust.location_id)	AS custLocationName,
+				cust.address								AS custAddress,
+				cust.contact_name							AS custContactName,
+				cust.tel_no									AS custTelNo,
+				cust.mobile_no								AS custMobileNo,
+				</isNotEmpty>
+				
+				<isNotEmpty property="custId" prepend="">
+				host.user_no								AS hostUserNo,
+				host.user_name								AS hostUserName,
+				(SELECT  CONCAT(IFNULL(e.location_name,''), IFNULL(d.location_name,''), IFNULL(c.location_name,''))
+				   FROM  eos_locations_new c
+				   LEFT OUTER JOIN eos_locations_new d ON c.upper_location_id = d.location_id
+				   LEFT OUTER JOIN  eos_locations_new e ON d.upper_location_id = e.location_id
+				  WHERE c.location_id = host.location_id)	AS hostLocationName,
+				host.address								AS hostAddress,
+				host.contact_name							AS hostContactName,
+				host.tel_no									AS hostTelNo,
+				host.mobile_no								AS hostMobileNo,
+				</isNotEmpty>
+				
+				a.distribute_seq_no							AS distributeSeqNo,
+				a.distribute_no								AS distributeNo,
+				a.item_desc_seq_no							AS priceColSeqNo,
+				a.price_col									AS priceColName,
+				a.price_desc								AS priceDesc,
+				a.custtype_id								AS custTypeId,
+				(SELECT  custtype_name
+				   FROM  eos_custtype_new
+				  WHERE  custtype_id = a.custtype_id)		AS custTypeName,
+				a.clerkno									AS clerkNo,
+				a.emp_id									AS empId,
+				a.car_seq_no								AS carSeqNo,
+				a.cust_short_name							AS custShortName,
+				a.psql										AS psql,
+				a.state										AS state,
+				ct.psql										AS custtypePsql
+		  FROM  eos_hostcust_new a
+	 LEFT JOIN  eos_custtype_new ct ON a.custtype_id = ct.custtype_id,
+		  		eos_user_new	 cust,
+		   		eos_user_new	 host
+		 WHERE  a.cust_id = cust.user_id AND a.host_id = host.user_id
+			  	AND a.state = 'ST0001'
+			  	AND (host.user_kind = 'UK0002' OR host.user_kind = 'UK0003')
+			  	<isNotEmpty property="custId" prepend="AND">
+			  		a.cust_id = #custId#
+				</isNotEmpty>
+				<isNotEmpty property="hostId" prepend="AND">
+				  	a.host_id = #hostId#
+				</isNotEmpty>
+				<isNotEmpty property="chelp" prepend="">
+				  	<isNotEmpty property="hostId" prepend="AND">
+					cust.chelp LIKE CONCAT('%', #chelp#, '%')
+				  	</isNotEmpty>
+				  	<isNotEmpty property="custId" prepend="AND">
+					host.chelp LIKE CONCAT('%', #chelp#, '%')
+				  	</isNotEmpty>
+				</isNotEmpty>
+	  ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="countHostCustList" resultClass="integer">
+		SELECT  count(*)
+		  FROM  eos_hostcust_new a
+	 LEFT JOIN  eos_custtype_new ct ON a.custtype_id = ct.custtype_id,
+		  		eos_user_new	 cust,
+		   		eos_user_new	 host
+		 WHERE  a.cust_id = cust.user_id AND a.host_id = host.user_id
+		 		AND a.state = 'ST0001'
+		 		AND (host.user_kind = 'UK0002' OR host.user_kind = 'UK0003')
+		   		<isNotEmpty property="custId" prepend="AND">
+			  		a.cust_id = #custId#
+				</isNotEmpty>
+				<isNotEmpty property="hostId" prepend="AND">
+				  	a.host_id = #hostId#
+				</isNotEmpty>
+				<isNotEmpty property="chelp" prepend="">
+				  	<isNotEmpty property="hostId" prepend="AND">
+					cust.chelp LIKE CONCAT('%', #chelp#, '%')
+				  	</isNotEmpty>
+				  	<isNotEmpty property="custId" prepend="AND">
+					host.chelp LIKE CONCAT('%', #chelp#, '%')
+				  	</isNotEmpty>
+				</isNotEmpty>
+	  
+	</select>
+	
+	
+</sqlMap>

@@ -1,0 +1,1019 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="billproc">
+	<typeAlias alias="billProc" type="com.kpc.eos.model.billProcMng.BillProcModel" />
+	<typeAlias alias="employee" type="com.kpc.eos.model.bizSetting.EmployeeModel" />
+	<typeAlias alias="prePayBill" type="com.kpc.eos.model.billProcMng.PrepayBillModel" />
+	<typeAlias alias="billLine" type="com.kpc.eos.model.bill.BillLineModel" />
+	<typeAlias alias="supplyStatistic" type="com.kpc.eos.model.billProcMng.SupplyStatisticModel" />
+	<typeAlias alias="buyStatistic" type="com.kpc.eos.model.billProcMng.BuyStatisticModel" />
+	<typeAlias alias="distributeStatistic" type="com.kpc.eos.model.billProcMng.DistributeStatisticModel" />
+	<typeAlias alias="bizData" type="com.kpc.eos.model.bizSetting.BizDataModel" />
+	<typeAlias alias="distributeConfirm" type="com.kpc.eos.model.billProcMng.DistributeConfirmModel" />
+	<typeAlias alias="hostcust" type="com.kpc.eos.model.bizSetting.HostCustModel" />
+	
+	<resultMap id="BillProcResultMap" class="billProc">
+		<result property="billProcId" 					column="bill_proc_id" />
+		<result property="billId" 						column="bill_id" />
+		<result property="billHead.billType" 			column="bill_type" />
+		<result property="billHead.arriveDate" 			column="arrive_date" />
+		<result property="billHead.custUserId" 			column="cust_user_id" />
+		<result property="billHead.custUserNo" 			column="cust_user_no" />
+		<result property="billHead.custUserName" 		column="cust_user_name" />
+		<result property="billHead.hostUserId" 			column="host_user_id" />
+		<result property="billHead.hostUserNo" 			column="host_user_no" />
+		<result property="billHead.hostUserName" 		column="host_user_name" />
+		<result property="billHead.bnoUser" 			column="bno_user" />
+		<result property="billHead.paytypeName" 		column="paytype_name" />
+		<result property="billHead.paymentType"			column="payment_type" />
+		<result property="billHead.weixinYn"			column="weixin_yn" />
+		<result property="billHead.payState"			column="pay_state" />
+		<result property="billHead.totalAmt"			column="total_amt" />
+		<result property="billHead.total2"				column="total2" />
+		<result property="billHead.freightamount2"		column="freightamount2" />
+		<result property="billHead.note"				column="note" />
+		<result property="billHead.webno"				column="webno" />
+		<result property="lineTotal1"					column="lineTotal1" />
+		<result property="lineTotal2"					column="lineTotal2" />
+		<result property="billProcName"					column="bill_proc_name" />
+		<result property="billHead.procMan"				column="proc_man" />
+		<result property="billHead.billProc"			column="bill_proc" />
+		<result property="billHead.state"				column="state" />
+		<result property="procUserId"					column="user_id" />
+		<result property="workFlowId"					column="proc_dat_id" />
+		<result property="procSeqNo"					column="proc_seq_no" />
+		<result property="billHead.createDate" 			column="create_date" />
+		<result property="itemYn"						column="item_yn" />
+	</resultMap>
+	
+	<resultMap id="BillProcDataResultMap" class="billProc" extends="BillProcResultMap">
+		<result property="billHead.custContactName"		column="cust_contact_name" />
+		<result property="billHead.custTelNo"			column="cust_tel_no" />
+		<result property="billHead.custMobileNo"		column="cust_mobile_no" />
+		<result property="billHead.hostTelNo"			column="host_tel_no" />
+		<result property="billHead.hostMobileNo"		column="host_mobile_no" />
+		<result property="billHead.hostContactName"		column="host_contact_name" />
+		<result property="billHead.hbmark"				column="hbmark" />
+		<result property="billHead.addrLocationName"	column="addr_location_name" />
+		<result property="billHead.addrAddress"			column="addr_address" />
+		<result property="billHead.addrContactName"		column="addr_contact_name"/>
+		<result property="billHead.addrTelNo"			column="addr_tel_no" />
+		<result property="billHead.addrMobile"			column="addr_mobile" />
+		<result property="billHead.pricecol"			column="pricecol" />
+		<result property="billHead.pricedesc"			column="pricedesc" />
+		<result property="billHead.inputorName"			column="inputor_name" />
+		<result property="billHead.storeName"			column="store_name" />
+		<result property="billHead.rbillId"				column="rbill_id" />
+		<result property="procNote"						column="note"/>
+		<result property="qtyYn"						column="qty_yn" />
+		<result property="priceYn"						column="price_yn" />
+		<result property="shipPriceYn"					column="ship_price_yn" />
+		<result property="distributeYn"					column="distribute_yn" />
+	</resultMap>
+	
+	<select id="getBillMinDate" resultClass="String">
+		SELECT 	MIN(DATE(a.create_date))
+		  FROM 	eos_bill_head_new a,
+		  		eos_bill_proc_new b
+		 WHERE  b.emp_id = #empId#
+		   AND	a.host_user_id = #userId#
+		   AND	b.state = 'PS0001'
+		   AND	a.bill_id = b.bill_id
+	</select>
+	
+	<select id="getBillMaxDate" resultClass="String">
+		SELECT 	MAX(DATE(a.create_date))
+		  FROM 	eos_bill_head_new a,
+		  		eos_bill_proc_new b
+		 WHERE  b.emp_id = #empId#
+		   AND	a.host_user_id = #userId#
+		   AND	b.state = 'PS0001'
+		   AND	a.bill_id = b.bill_id
+	</select>
+	
+	<select id="getBillProcList" resultMap="BillProcResultMap">
+		SELECT  b.bill_proc_id,
+				b.bill_id,
+				a.bill_type,
+				a.arrive_date,
+				a.cust_user_id,
+				a.cust_user_no,
+				a.cust_user_name,
+				a.host_user_id,
+				a.host_user_no,
+				a.host_user_name,
+				a.bno_user,
+				a.paytype_name,
+				a.payment_type,
+				a.weixin_yn,
+				a.pay_state,
+				a.total_amt,
+				a.total2,
+				a.freightamount2,
+				CASE c.item_yn WHEN 'Y' THEN
+					(SELECT  sum(tot) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id AND vendor_id = #userId#)
+				ELSE
+					(SELECT  sum(tot) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id)
+				END 			AS lineTotal1,
+				CASE c.item_yn WHEN 'Y' THEN
+					(SELECT  sum(tot2) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id AND vendor_id = #userId#)
+				ELSE
+					(SELECT  sum(tot2) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id)
+				END				AS lineTotal2,
+				 b.bill_proc_name,
+				 a.proc_man,
+				 DATE(a.create_date)	AS create_date,
+				 b.user_id,
+				 b.proc_dat_id,
+				 b.proc_seq_no,
+				 a.note,
+				 c.item_yn,
+				 a.webno,
+				 b.state,
+				 a.bill_proc
+		   FROM  eos_bill_head_new   a,
+		   		 eos_bill_proc_new	b,
+		    	 eos_proc_dat_new	c
+		  WHERE  a.bill_id 		= b.bill_id
+		    AND  c.proc_dat_id 	= b.proc_dat_id
+		    AND  c.seq_no		= b.proc_seq_no
+		    AND  b.emp_id = #empId#
+		<isEqual prepend="AND" property="checked" compareValue="N">
+		    	 b.state = 'PS0001'
+		</isEqual>
+		<isEqual prepend="AND" property="checked" compareValue="Y">
+		    	 ((b.state = 'PS0002' AND b.proc_dat_id != '0') OR (b.state = 'PS0003'))
+		    AND  b.emp_name = b.emp_nameok
+		</isEqual>
+		<isNotEmpty prepend="AND" property="billType">
+				a.bill_type = #billType#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="billId">
+				a.bill_id LIKE CONCAT('%', #billId#, '%')
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="createDateFrom">
+			<![CDATA[a.create_date >= CONCAT(#createDateFrom#, ' 00:00:00')]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="createDateTo">
+			<![CDATA[a.create_date <= CONCAT(#createDateTo#, ' 23:59:59') ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="compName">
+			(a.host_user_name LIKE CONCAT('%', #compName#, '%') OR a.cust_user_name LIKE CONCAT('%', #compName#, '%'))
+		</isNotEmpty>
+		<isEqual property="checked" compareValue="N">
+		    	 ORDER BY  $page.sidx$ $page.sord$
+		</isEqual>
+		<isEqual property="checked" compareValue="Y">
+		    	 ORDER BY  b.bill_id DESC, b.update_date DESC
+		</isEqual>
+		LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getCountBillProcList" resultClass="Integer">
+		SELECT  count(*)			AS cnt
+		  FROM  eos_bill_head_new   a,
+		  		eos_bill_proc_new	b,
+		  		eos_proc_dat_new	c
+		 WHERE  a.bill_id 		= b.bill_id
+		   AND  c.proc_dat_id 	= b.proc_dat_id
+		   AND  c.seq_no		= b.proc_seq_no
+		   AND  b.emp_id = #empId#
+			<isEqual prepend="AND" property="checked" compareValue="N">
+		    	b.state = 'PS0001'
+			</isEqual>
+			<isEqual prepend="AND" property="checked" compareValue="Y">
+		    	((b.state = 'PS0002' AND b.proc_dat_id != '0') OR (b.state = 'PS0003'))
+		    	AND b.emp_name = b.emp_nameok
+			</isEqual>
+			<isNotEmpty prepend="AND" property="billType">
+				a.bill_type = #billType#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="billId">
+				a.bill_id LIKE CONCAT('%', #billId#, '%')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateFrom">
+				<![CDATA[a.create_date >= CONCAT(#createDateFrom#, ' 00:00:00')]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateTo">
+				<![CDATA[a.create_date <= CONCAT(#createDateTo#, ' 23:59:59') ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="compName">
+				(a.host_user_name LIKE CONCAT('%', #compName#, '%') OR a.cust_user_name LIKE CONCAT('%', #compName#, '%'))
+			</isNotEmpty>
+	</select>
+	
+	<select id="getProcEmpList" resultClass="employee">
+		SELECT  emp_id			AS empId,
+				emp_name		AS empName
+		  FROM  eos_bill_proc_new
+		 WHERE  bill_id 		= #billId#
+		 <isNotEmpty property="procUserId" prepend="AND">
+		 		user_id		 	= #procUserId#
+		 </isNotEmpty>
+		   AND  proc_dat_id		= #workFlowId#
+		   AND  proc_seq_no		= #procSeqNo#
+	</select>
+	
+	<select id="getBillProc" resultMap="BillProcDataResultMap">
+		SELECT  b.bill_proc_id,
+				b.bill_id,
+				a.bill_type,
+				a.arrive_date,
+				a.cust_user_id,
+				a.cust_user_no,
+				a.cust_user_name,
+				a.cust_contact_name,
+				a.cust_tel_no,
+				a.cust_mobile_no,
+				a.host_user_id,
+				a.host_user_no,
+				a.host_user_name,
+				a.host_contact_name,
+				a.host_tel_no,
+				a.host_mobile_no,
+				a.bno_user,
+				a.addr_location_name,
+				a.addr_address,
+				a.addr_contact_name,
+				a.addr_tel_no,
+				a.addr_mobile,
+				a.paytype_name,
+				a.payment_type,
+				a.weixin_yn,
+				a.pay_state,
+				a.total_amt,
+				a.total2,
+				a.freightamount2,
+				CASE c.item_yn WHEN 'Y' THEN
+					(SELECT  sum(tot) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id AND vendor_id = #userId#)
+				ELSE
+					(SELECT  sum(tot) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id)
+				END 			AS lineTotal1,
+				CASE c.item_yn WHEN 'Y' THEN
+					(SELECT  sum(tot2) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id AND vendor_id = #userId#)
+				ELSE
+					(SELECT  sum(tot2) FROM eos_bill_line_new  WHERE  bill_id = a.bill_id)
+				END				AS lineTotal2,
+				 b.bill_proc_name,
+				 a.proc_man,
+				 a.create_date		 				AS create_date,
+				 b.user_id,
+				 b.proc_dat_id,
+				 b.proc_seq_no,
+				 a.note,
+				 b.note								AS procNote,
+				 a.hbmark,
+				 a.pricecol,
+				 a.pricedesc,
+				 b.qty_yn,
+				 b.price_yn,
+				 b.ship_price_yn,
+				 c.item_yn,
+				 c.distribute_yn,
+				 a.inputor_name,
+				 a.state,
+				 a.store_name,
+				 a.webno,
+				 a.bill_proc,
+				 a.rbill_id
+		   FROM  eos_bill_head_new	a,
+		  		 eos_bill_proc_new 	b,
+		  		 eos_proc_dat_new c
+		  WHERE  b.bill_proc_id = #billProcId#
+		    AND  b.bill_id = a.bill_id
+		    AND  c.proc_dat_id = b.proc_dat_id
+	</select>
+	
+	<select id="getPrePayList" resultClass="prePayBill">
+		SELECT  paytype2				AS paytype2,
+				sum(tot)				AS totalAmt
+		  FROM  eos_paybill_detail_new
+		 WHERE  user_id		 = #hostUserId#
+		   AND  cust_user_id = #custUserId#
+		   AND  state = 'WS0002'
+		 GROUP BY paytype2
+	</select>
+	
+	<select id="getProcYn" resultClass="string">
+		SELECT  DISTINCT(user_id) AS userId
+		  FROM  eos_bill_proc_new
+		 WHERE  bill_id = #billId#
+		   AND	proc_seq_no != -1
+	</select>
+	
+	<select id="getBillProcHistory" resultClass="billProc">
+		SELECT 
+				user_id												AS procUserId,
+				user_name											AS userName,
+				bill_proc_name										AS billProcName,
+				state												AS state,
+				note												AS procNote,
+				IF(state='PS0001', '', update_date)					AS updateDate,
+				proc_dat_id											AS workFlowId,
+				proc_seq_no											AS procSeqNo,
+				emp_name 											AS empName,
+				bill_id												AS billId
+		FROM (
+		SELECT  user_id,
+				user_name,
+				bill_proc_name,
+				state,
+				note,
+				update_date,
+				proc_dat_id,
+				proc_seq_no,
+				emp_name,
+				bill_id
+		  FROM  eos_bill_proc_new a
+		 WHERE  bill_id = #billId#
+				AND emp_name = emp_nameok
+				AND state != 'PS0001'
+UNION ALL
+		SELECT  user_id,
+				user_name,
+				bill_proc_name,
+				state,
+				note,
+				update_date,
+				proc_dat_id,
+				proc_seq_no,
+				GROUP_CONCAT(DISTINCT emp_name SEPARATOR ',  ') AS emp_name,
+				bill_id
+		  FROM  eos_bill_proc_new a
+		 WHERE  bill_id = #billId#
+				AND state='PS0001'
+	  GROUP BY  user_id, proc_dat_id, proc_seq_no
+	  ) a
+	  ORDER BY  update_date
+	</select>
+	
+	<select id="checkDistributedOrder" resultClass="string">
+		SELECT  IF(COUNT(*) > 1, 'Y', 'N')
+		  FROM  
+		  (
+				SELECT  user_id
+				  FROM  eos_bill_proc_new
+				 WHERE  bill_id = #billId#
+				   AND  proc_seq_no != -1
+				 GROUP BY user_id
+		  ) AS a
+	</select>
+	
+	<insert id="insertBillProc">
+		INSERT INTO eos_bill_proc_new
+		(
+			bill_id,
+			proc_dat_id,
+			emp_id,
+			proc_type_cd,
+			proc_seq_no,
+			bill_proc_name,
+			qty_yn,
+			price_yn,
+			ship_price_yn,
+			min_cost,
+			max_cost,
+			note,
+			emp_name,
+			emp_nameok,
+			state,
+			readmark,
+			user_id,
+			user_no,
+			user_name,
+			create_date,
+			create_by,
+			update_date,
+			update_by
+		)
+		VALUES
+		(
+			#billId#,
+			#procDatId#,
+			#empId#,
+			#procTypeCd#,
+			#procSeqNo#,
+			#billProcName#,
+			#qtyYn#,
+			#priceYn#,
+			#shipPriceYn#,
+			#minCost#,
+			#maxCost#,
+			#procNote#,
+			#empName#,
+			#empNameok#,
+			#state#,
+			#readmark#,
+			#userId#,
+			#userNo#,
+			#userName#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#updateBy# 
+		)
+	</insert>
+	
+	<update id="updateBillProc">
+		UPDATE  eos_bill_proc_new
+		   SET  note 		= #procNote#,
+		   		state 		= #state#,
+		   		update_by 	= #updateBy#,
+		   		emp_nameok  = (SELECT emp_name FROM eos_emp_new WHERE emp_id = #empId#),
+		   		update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S')
+	     WHERE  bill_id     = #billId#
+	       AND  proc_dat_id = #procDatId#
+	       AND  state = 'PS0001'
+	</update>
+	
+	<delete id="deleteBillProcByBillId">
+		DELETE  FROM eos_bill_proc_new WHERE  bill_id = #billId#
+	</delete>
+	
+	<insert id="insertPayBillDetail">
+		INSERT INTO eos_paybill_detail_new
+			(
+				bill_id,			bill_type,			user_id,			dept_id,			cust_user_id,			pname,
+				paytype1,			paytype2,			ration,				tot,
+				custtype_id,		state,
+				create_date,		create_by,			update_date,		update_by)
+		SELECT  a.bill_id,			a.bill_type,		a.host_user_id,		NULL,				a.cust_user_id,			NULL,
+				a.paytype_id,		a.payment_type,		100,				IF(a.bill_type = 'DT0007', a.total2, (-1) * a.total2),
+				a.custtype_id,		'WS0002',
+				DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),	#createBy#, 	DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),	#updateBy#
+		  FROM  eos_bill_head_new a
+		 WHERE  a.bill_id = #billId#
+	</insert>
+	
+	<update id="updateReadMark">
+		UPDATE	eos_bill_proc_new
+		   SET  readmark = 'Y'
+		 WHERE  bill_proc_id = #billProcId#
+	</update>
+	
+	<select id="getSupplyStatistic" resultClass="supplyStatistic">
+		SELECT  a.host_user_id			AS hostUserId,
+				c.item_id				AS itemId,
+				SUM(c.qty2)				AS qty,
+				SUM(c.tot2)				AS total,
+				d.price_in				AS lastPriceIn,
+				e.item_no				AS itemNo,
+				e.item_name				AS itemName,
+				e.unit					AS unit,
+				(SELECT  user_name	
+				   FROM  eos_user_new
+				  WHERE  user_id = d.last_vendor_id
+				 )			 							AS lastVendorName,
+				ROUND(SUM(c.tot2) / SUM(c.qty2), 2)		AS salePrice,
+				d.c1					AS c1,
+				d.c2					AS c2,
+				d.c3					AS c3,
+				d.c4					AS c4,
+				d.c5					AS c5,
+				d.c6					AS c6,
+				d.c7					AS c7,
+				d.c8					AS c8,
+				d.c9					AS c9,
+				d.c10					AS c10,
+				d.c11					AS c11,
+				d.c12					AS c12,
+				d.c13					AS c13,
+				d.c14					AS c14,
+				d.c15					AS c15,
+				d.c16					AS c16,
+				d.c17					AS c17,
+				d.c18					AS c18,
+				d.c19					AS c19,
+				d.c20					AS c20,
+				DATE((SELECT MAX(a1.create_date)
+				  FROM  eos_bill_head_new a1,
+						eos_bill_line_new b1
+				 WHERE  a1.bill_id = b1.bill_id
+				   AND  b1.item_id = c.item_id
+				   AND  a1.cust_user_id = a.host_user_id
+				   AND  a1.bill_type = 'DT0002'
+				   AND  a1.state = 'WS0002'
+				)) arriveDate
+		  FROM	eos_bill_head_new 	a,
+		  		eos_bill_proc_new	b,
+		  		eos_bill_line_new	c,
+		  		eos_user_item_new   d,
+		  		eos_item_new		e
+		 WHERE  b.bill_id = a.bill_id
+		   AND  c.bill_id = a.bill_id
+		   AND  d.item_id = c.item_id
+		   AND  d.user_id = c.vendor_id
+		   AND  b.state = 'PS0001'
+		   AND  c.vendor_id = #userId#
+		   AND	b.emp_id = #empId#
+		   AND  a.bill_type = 'DT0004'
+		   AND  e.item_id = d.item_id
+		<isNotEmpty prepend="and" property="createDateFrom1">
+			<![CDATA[a.create_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="createDateTo1">
+			<![CDATA[a.create_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="receiptFlag">
+			d.price_in <![CDATA[ > ]]> 0
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="itemNo">
+			e.item_no = #itemNo#
+		</isNotEmpty>
+		 GROUP BY a.host_user_id, c.item_id
+	</select>
+	
+	<select id="getBuyStatisticItemList" resultClass="buyStatistic">
+		SELECT	e.item_id								AS itemId,
+				e.item_no								AS itemNo,
+				e.item_name								AS itemName,
+				SUM(c.qty2) 							AS totalQty
+		  FROM 	eos_bill_head_new a,
+		  		eos_bill_proc_new b,
+		  		eos_bill_line_new c,
+		  		eos_item_new	 e
+		 WHERE  b.state = 'PS0001'
+		   AND	b.emp_id = #empId#
+		   AND	a.host_user_id = #userId#
+		   AND  a.bill_type = 'DT0004'
+		   AND  b.bill_id = a.bill_id
+		   AND  c.bill_id = a.bill_id
+		   AND  e.item_id = c.item_id
+		<isNotEmpty prepend="AND" property="createDateFrom1">
+			<![CDATA[a.create_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="createDateTo1">
+			<![CDATA[a.create_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+		</isNotEmpty>
+		 GROUP BY c.item_id
+	</select>
+	
+	<select id="getBuyStatistic" resultClass="buyStatistic">
+		SELECT	e.item_id								AS itemId,
+				e.item_no								AS itemNo,
+				e.item_name								AS itemName,
+				a.cust_short_name						AS custShortName,
+				(SELECT c1 
+				   FROM eos_pdat_line_new 
+				  WHERE user_id = #userId#
+				    AND code_id = 'BD0002' 
+				    AND seq_no = d.distribute_seq_no)	AS distributeName,
+				(SELECT  C1
+				   FROM  eos_pdat_line_new
+				  WHERE  user_id = #userId#
+				    AND  code_id = 'BD0011'
+				    AND  seq_no  = d.car_seq_no)		AS carNo,
+				SUM(c.qty2) AS qty
+		  FROM 	eos_bill_head_new a,
+		  		eos_bill_proc_new b,
+		  		eos_bill_line_new c,
+		  		eos_hostcust_new d,
+		  		eos_item_new	 e
+		 WHERE  b.state = 'PS0001'
+		   AND	b.emp_id = #empId#
+		   AND  a.bill_type = 'DT0004'
+		   AND  d.host_id = #userId#
+		   AND	c.item_id = #itemId#
+		   AND  b.bill_id = a.bill_id
+		   AND  c.bill_id = a.bill_id
+		   AND  d.cust_id = a.cust_user_id
+		   AND  e.item_id = c.item_id
+		<isNotEmpty prepend="AND" property="createDateFrom1">
+			<![CDATA[a.create_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="createDateTo1">
+			<![CDATA[a.create_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+		</isNotEmpty>
+		 GROUP BY d.distribute_seq_no, a.cust_user_name
+	</select>
+	
+	<select id="getBuyStatisticForMobile" resultClass="buyStatistic">
+		SELECT	d.item_id								AS itemId,
+				d.item_no								AS itemNo,
+				d.item_name								AS itemName,
+				d.unit									AS unit,
+				ROUND(SUM(c.qty2), 0)					AS totalQty,
+				IFNULL(ROUND(MAX(c.in_qty), 0), 0)		AS inQty,
+				IFNULL(ROUND(MAX(c.in_price), 1), 0)	AS inPrice,
+				IFNULL(ROUND(MAX(c.sale_price), 1), 0)	AS salePrice
+		  FROM 	eos_bill_head_new	a,
+		  		eos_bill_proc_new	b,
+		  		eos_bill_line_new	c,
+		  		eos_item_new		d
+		 WHERE	b.state = 'PS0001'
+		   AND	b.emp_id = #empId#
+		   AND	a.bill_type = 'DT0004'
+		   AND	a.host_user_id = #userId#
+		   AND	b.bill_id = a.bill_id
+		   AND	c.bill_id = a.bill_id
+		   AND	d.item_id = c.item_id
+		 <isNotEmpty prepend="AND" property="createDateFrom1">
+			<![CDATA[a.create_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="createDateTo1">
+			<![CDATA[a.create_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+		</isNotEmpty>
+		 GROUP BY c.item_id
+	</select>
+	
+	<update id="saveBuyStat">
+		UPDATE	eos_bill_head_new a,
+				eos_bill_proc_new b,
+				eos_bill_line_new c
+		   SET	c.in_qty 		= #inQty#,
+		   		c.in_price 		= #inPrice#,
+		   		c.sale_price 	= #salePrice#
+		 WHERE	b.bill_id  = a.bill_id
+		   AND	c.bill_id = a.bill_id
+		   AND  b.state = 'PS0001'
+		   AND	b.emp_id = #empId#
+		   AND	a.host_user_id = #userId#
+		   AND	a.bill_type = 'DT0004'
+		   AND	c.item_id = #itemId#
+		   AND	c.vendor_id = #userId#
+		<isNotEmpty prepend="AND" property="fromDate">
+			<![CDATA[a.create_date >= CONCAT(#fromDate#, ' 00:00:00')]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="toDate">
+			<![CDATA[a.create_date <= CONCAT(#toDate#, ' 23:59:59') ]]>
+		</isNotEmpty>
+	</update>
+	
+	<select id="getDistributeList" resultClass="bizData">
+		SELECT  CONCAT(
+					(SELECT user_no
+					   FROM eos_user_new
+					  WHERE user_id = a.host_user_id),
+					'-',
+					(SELECT  C1
+					   FROM  eos_pdat_line_new
+					  WHERE  user_id = #userId#
+					    AND  code_id = 'BD0002'
+					    AND  seq_no  = d.distribute_seq_no))	AS bizDataName,
+				d.distribute_seq_no								AS seqNo
+		  FROM  eos_bill_head_new a,
+		  		eos_bill_proc_new b,
+		  		eos_bill_line_new c,
+		  		eos_hostcust_new d
+		 WHERE  a.bill_type = 'DT0004'
+		   AND  b.state = 'PS0001'
+		   AND  b.emp_id = #empId#
+		   AND  b.bill_id = a.bill_id
+		   AND  c.bill_id = a.bill_id
+		   AND  d.host_id = a.host_user_id
+		   AND  d.cust_id = a.cust_user_id
+		   AND  c.vendor_id = #userId#
+		   AND  d.distribute_seq_no IS NOT NULL
+			<isNotEmpty prepend="and" property="createDateFrom1">
+				<![CDATA[a.create_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateTo1">
+				<![CDATA[a.create_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+			</isNotEmpty>
+		 GROUP BY d.host_id, d.distribute_seq_no
+	</select>
+	
+	<select id="getDistributeStatistic" resultClass="distributeStatistic">
+		SELECT  item.itemId,
+				item.itemNo,
+				item.itemName,
+				item.unit,
+				ROUND(MAX(IF(rowNum = 1, item.qty, 0)), 0) 			AS qty1,
+				ROUND(MAX(IF(rowNum = 2, item.qty, 0)), 0) 			AS qty2,
+				ROUND(MAX(IF(rowNum = 3, item.qty, 0)), 0) 			AS qty3,
+				ROUND(MAX(IF(rowNum = 4, item.qty, 0)), 0) 			AS qty4,
+				ROUND(MAX(IF(rowNum = 5, item.qty, 0)), 0) 			AS qty5,
+				ROUND(MAX(IF(rowNum = 6, item.qty, 0)), 0) 			AS qty6,
+				ROUND(MAX(IF(rowNum = 7, item.qty, 0)), 0) 			AS qty7,
+				ROUND(MAX(IF(rowNum = 8, item.qty, 0)), 0) 			AS qty8,
+				ROUND(MAX(IF(rowNum = 9, item.qty, 0)), 0) 			AS qty9,
+				ROUND(MAX(IF(rowNum = 10, item.qty, 0)), 0) 		AS qty10,
+				ROUND(MAX(IF(rowNum = 11, item.qty, 0)), 0) 		AS qty11,
+				ROUND(MAX(IF(rowNum = 12, item.qty, 0)), 0) 		AS qty12,
+				ROUND(MAX(IF(rowNum = 13, item.qty, 0)), 0) 		AS qty13,
+				ROUND(MAX(IF(rowNum = 14, item.qty, 0)), 0) 		AS qty14,
+				ROUND(MAX(IF(rowNum = 15, item.qty, 0)), 0) 		AS qty15,
+				ROUND(MAX(IF(rowNum = 16, item.qty, 0)), 0) 		AS qty16,
+				ROUND(MAX(IF(rowNum = 17, item.qty, 0)), 0) 		AS qty17,
+				ROUND(MAX(IF(rowNum = 18, item.qty, 0)), 0) 		AS qty18,
+				ROUND(MAX(IF(rowNum = 19, item.qty, 0)), 0) 		AS qty19,
+				ROUND(MAX(IF(rowNum = 20, item.qty, 0)), 0) 		AS qty20,
+				ROUND(MAX(IF(rowNum = 21, item.qty, 0)), 0) 		AS qty21,
+				ROUND(MAX(IF(rowNum = 22, item.qty, 0)), 0) 		AS qty22,
+				ROUND(MAX(IF(rowNum = 23, item.qty, 0)), 0) 		AS qty23,
+				ROUND(MAX(IF(rowNum = 24, item.qty, 0)), 0) 		AS qty24,
+				ROUND(MAX(IF(rowNum = 25, item.qty, 0)), 0) 		AS qty25,
+				ROUND(SUM(item.qty), 0)								AS totalQty
+		  FROM  
+		  	(
+		  		SELECT *,
+		  			   (@rownum := @rownum + 1) AS rowNum
+		  		  FROM
+		  		  (
+			  		  	SELECT 	a.cust_user_id,
+		  		  				a.cust_short_name,
+		  		  				d.distribute_no
+		  		  		  FROM  eos_bill_head_new a,
+		  		  		  		eos_bill_proc_new b,
+		  		  		  		eos_bill_line_new c,
+		  		  		  		eos_hostcust_new d
+		  		  		 WHERE  a.bill_type = 'DT0004'
+		  		  		   AND  b.state = 'PS0001'
+		  		  		   AND  b.emp_id = #empId#
+		  		  		   AND  b.bill_id = a.bill_id
+						   AND  c.bill_id = a.bill_id
+						   AND  d.host_id = a.host_user_id
+						   AND  d.cust_id = a.cust_user_id
+						   AND  c.vendor_id = #userId#
+						   AND  d.distribute_seq_no = #distributeSeqNo#
+						 GROUP BY a.cust_short_name
+		  		  ) AS a,
+		  		  (SELECT @rownum := 0) AS rownum
+		  		  ORDER BY distribute_no
+		  	) AS customer,
+		  	(
+		  		SELECT 	c.item_id			AS itemId,
+						e.item_no			AS itemNo,
+						e.item_name			AS itemName,
+						e.unit				AS unit,
+						a.cust_user_id		AS custUserId,
+						a.cust_short_name	AS custShortName,
+						SUM(c.qty2)   		AS qty
+				  FROM  eos_bill_head_new a,
+						eos_bill_proc_new b,
+						eos_bill_line_new c,
+						eos_hostcust_new d,
+						eos_item_new e
+				 WHERE	a.bill_type = 'DT0004'
+				   AND  b.state = 'PS0001'
+				   AND  b.emp_id = #empId#
+				   AND  b.bill_id = a.bill_id
+				   AND  c.bill_id = a.bill_id
+				   AND  d.host_id = a.host_user_id
+				   AND  d.cust_id = a.cust_user_id
+				   AND  c.vendor_id = #userId#
+				   AND  e.item_id = c.item_id
+				   AND  d.distribute_seq_no = #distributeSeqNo#
+				 GROUP BY c.item_id, a.cust_user_id, a.cust_short_name
+		  	) AS item
+		WHERE customer.cust_user_id = item.custUserId
+		  AND customer.cust_short_name = item.custShortName
+	    GROUP BY itemId
+	</select>
+	
+	<select id="getDistributeCustomListForPrint" resultClass="hostcust">
+		SELECT  a.custShortName,
+				a.carNo,
+				a.custUserId
+		  FROM
+		  (
+				SELECT  a.cust_short_name					AS custShortName,
+						a.cust_user_id						AS custUserId,
+						d.distribute_no						AS distributeNo,
+					  ( SELECT  C1
+					     FROM  eos_pdat_line_new
+					    WHERE  user_id = #userId#
+					      AND  code_id = 'BD0011'
+					      AND  seq_no  = d.car_seq_no ) 	AS carNo
+				  FROM  eos_bill_head_new a,
+				  		eos_bill_proc_new b,
+				  		eos_bill_line_new c,
+				  		eos_hostcust_new d
+				 WHERE  a.bill_type = 'DT0004'
+				   AND  b.state = 'PS0001'
+				   AND  b.emp_id = #empId#
+				   AND  b.bill_id = a.bill_id
+				   AND  c.bill_id = a.bill_id
+				   AND  d.host_id = a.host_user_id
+				   AND  d.cust_id = a.cust_user_id
+				   AND  c.vendor_id = #userId#
+			  	   AND  d.distribute_seq_no = #distributeSeqNo#
+			  	   AND  a.cust_short_name IS NOT NULL
+			   <isNotEmpty prepend="and" property="createDateFrom1">
+					<![CDATA[a.create_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo1">
+					<![CDATA[a.create_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+				</isNotEmpty>
+				GROUP BY a.cust_short_name
+		) AS a
+		ORDER BY a.distributeNo
+	</select>
+	
+	<select id="getDistributeItemListForPrint" resultClass="distributeStatistic">
+		SELECT  item.itemId,
+				item.itemNo,
+				item.itemName,
+				item.unit,
+				MAX(IF(rowNum = 1, customer.cust_user_id, '')) 		AS custUserId1,
+				ROUND(MAX(IF(rowNum = 1, item.qty, 0)), 0) 			AS qty1,
+				MAX(IF(rowNum = 2, customer.cust_user_id, '')) 		AS custUserId2,
+				ROUND(MAX(IF(rowNum = 2, item.qty, 0)), 0) 			AS qty2,
+				MAX(IF(rowNum = 3, customer.cust_user_id, '')) 		AS custUserId3,
+				ROUND(MAX(IF(rowNum = 3, item.qty, 0)), 0) 			AS qty3,
+				MAX(IF(rowNum = 4, customer.cust_user_id, '')) 		AS custUserId4,
+				ROUND(MAX(IF(rowNum = 4, item.qty, 0)), 0) 			AS qty4,
+				MAX(IF(rowNum = 5, customer.cust_user_id, '')) 		AS custUserId5,
+				ROUND(MAX(IF(rowNum = 5, item.qty, 0)), 0) 			AS qty5,
+				MAX(IF(rowNum = 6, customer.cust_user_id, '')) 		AS custUserId6,
+				ROUND(MAX(IF(rowNum = 6, item.qty, 0)), 0) 			AS qty6,
+				MAX(IF(rowNum = 7, customer.cust_user_id, '')) 		AS custUserId7,
+				ROUND(MAX(IF(rowNum = 7, item.qty, 0)), 0) 			AS qty7,
+				MAX(IF(rowNum = 8, customer.cust_user_id, '')) 		AS custUserId8,
+				ROUND(MAX(IF(rowNum = 8, item.qty, 0)), 0) 			AS qty8,
+				MAX(IF(rowNum = 9, customer.cust_user_id, '')) 		AS custUserId9,
+				ROUND(MAX(IF(rowNum = 9, item.qty, 0)), 0) 			AS qty9,
+				MAX(IF(rowNum = 10, customer.cust_user_id, '')) 	AS custUserId10,
+				ROUND(MAX(IF(rowNum = 10, item.qty, 0)), 0) 		AS qty10,
+				MAX(IF(rowNum = 11, customer.cust_user_id, '')) 	AS custUserId11,
+				ROUND(MAX(IF(rowNum = 11, item.qty, 0)), 0) 		AS qty11,
+				MAX(IF(rowNum = 12, customer.cust_user_id, '')) 	AS custUserId12,
+				ROUND(MAX(IF(rowNum = 12, item.qty, 0)), 0) 		AS qty12,
+				MAX(IF(rowNum = 13, customer.cust_user_id, '')) 	AS custUserId13,
+				ROUND(MAX(IF(rowNum = 13, item.qty, 0)), 0) 		AS qty13,
+				MAX(IF(rowNum = 14, customer.cust_user_id, '')) 	AS custUserId14,
+				ROUND(MAX(IF(rowNum = 14, item.qty, 0)), 0) 		AS qty14,
+				MAX(IF(rowNum = 15, customer.cust_user_id, '')) 	AS custUserId15,
+				ROUND(MAX(IF(rowNum = 15, item.qty, 0)), 0) 		AS qty15,
+				MAX(IF(rowNum = 16, customer.cust_user_id, '')) 	AS custUserId16,
+				ROUND(MAX(IF(rowNum = 16, item.qty, 0)), 0) 		AS qty16,
+				MAX(IF(rowNum = 17, customer.cust_user_id, '')) 	AS custUserId17,
+				ROUND(MAX(IF(rowNum = 17, item.qty, 0)), 0) 		AS qty17,
+				MAX(IF(rowNum = 18, customer.cust_user_id, '')) 	AS custUserId18,
+				ROUND(MAX(IF(rowNum = 18, item.qty, 0)), 0) 		AS qty18,
+				MAX(IF(rowNum = 19, customer.cust_user_id, '')) 	AS custUserId19,
+				ROUND(MAX(IF(rowNum = 19, item.qty, 0)), 0) 		AS qty19,
+				MAX(IF(rowNum = 20, customer.cust_user_id, '')) 	AS custUserId20,
+				ROUND(MAX(IF(rowNum = 20, item.qty, 0)), 0) 		AS qty20,
+				MAX(IF(rowNum = 21, customer.cust_user_id, '')) 	AS custUserId21,
+				ROUND(MAX(IF(rowNum = 21, item.qty, 0)), 0) 		AS qty21,
+				MAX(IF(rowNum = 22, customer.cust_user_id, '')) 	AS custUserId22,
+				ROUND(MAX(IF(rowNum = 22, item.qty, 0)), 0) 		AS qty22,
+				MAX(IF(rowNum = 23, customer.cust_user_id, '')) 	AS custUserId23,
+				ROUND(MAX(IF(rowNum = 23, item.qty, 0)), 0) 		AS qty23,
+				MAX(IF(rowNum = 24, customer.cust_user_id, '')) 	AS custUserId24,
+				ROUND(MAX(IF(rowNum = 24, item.qty, 0)), 0) 		AS qty24,
+				MAX(IF(rowNum = 25, customer.cust_user_id, '')) 	AS custUserId25,
+				ROUND(MAX(IF(rowNum = 25, item.qty, 0)), 0) 		AS qty25,
+				ROUND(SUM(item.qty), 0)								AS totalQty
+		  FROM  
+		  	(
+		  		SELECT *,
+		  			   (@rownum := @rownum + 1) AS rowNum
+		  		  FROM
+		  		  (
+			  		  	SELECT 	a.cust_user_id,
+		  		  				a.cust_short_name,
+		  		  				d.distribute_no
+		  		  		  FROM  eos_bill_head_new a,
+		  		  		  		eos_bill_proc_new b,
+		  		  		  		eos_bill_line_new c,
+		  		  		  		eos_hostcust_new d
+		  		  		 WHERE  a.bill_type = 'DT0004'
+		  		  		   AND  b.state = 'PS0001'
+		  		  		   AND  b.emp_id = #empId#
+		  		  		   AND  b.bill_id = a.bill_id
+						   AND  c.bill_id = a.bill_id
+						   AND  d.host_id = a.host_user_id
+						   AND  d.cust_id = a.cust_user_id
+						   AND  c.vendor_id = #userId#
+						   AND  d.distribute_seq_no = #distributeSeqNo#
+						 GROUP BY a.cust_short_name
+		  		  ) AS a,
+		  		  (SELECT @rownum := 0) AS rownum
+		  		  ORDER BY distribute_no
+		  	) AS customer,
+		  	(
+		  		SELECT 	c.item_id			AS itemId,
+						e.item_no			AS itemNo,
+						e.item_name			AS itemName,
+						e.unit				AS unit,
+						a.cust_user_id		AS custUserId,
+						a.cust_short_name	AS custShortName,
+						SUM(c.qty2)   		AS qty
+				  FROM  eos_bill_head_new a,
+						eos_bill_proc_new b,
+						eos_bill_line_new c,
+						eos_hostcust_new d,
+						eos_item_new e
+				 WHERE	a.bill_type = 'DT0004'
+				   AND  b.state = 'PS0001'
+				   AND  b.emp_id = #empId#
+				   AND  b.bill_id = a.bill_id
+				   AND  c.bill_id = a.bill_id
+				   AND  d.host_id = a.host_user_id
+				   AND  d.cust_id = a.cust_user_id
+				   AND  c.vendor_id = #userId#
+				   AND  e.item_id = c.item_id
+				   AND  d.distribute_seq_no = #distributeSeqNo#
+				 GROUP BY c.item_id, a.cust_short_name
+		  	) AS item
+		WHERE customer.cust_user_id = item.custUserId
+		  AND customer.cust_short_name = item.custShortName
+	    GROUP BY itemId
+	</select>
+	
+	<select id="getDistributeConfirmList" resultClass="distributeConfirm">
+		SELECT  d.host_id										AS hostUserId,
+				d.distribute_seq_no								AS distributeSeqNo,
+				(SELECT  C1
+				  FROM  eos_pdat_line_new
+				 WHERE  user_id = #userId#
+				   AND  code_id = 'BD0002'
+				   AND  seq_no  = d.distribute_seq_no)			AS distributeName,
+				d.distribute_no									AS distributeNo,
+				d.cust_short_name								AS custShortName,
+				c.item_id										AS itemId,
+				a.bill_id										AS billId,
+				f.item_no										AS itemNo,
+				f.item_name										AS itemName,
+				f.unit											AS unit,
+				c.qty2											AS qty2,
+				c.price2										AS price2,
+				c.qty											AS qty,
+				c.price											AS price
+		  FROM  eos_bill_head_new a,
+		  		eos_bill_proc_new b,
+		  		eos_bill_line_new c,
+		  		eos_hostcust_new d,
+		  		eos_user_item_new e,
+		  		eos_item_new	f
+		 WHERE  a.bill_type = 'DT0004'
+		   AND  b.state = 'PS0001'
+		   AND  b.emp_id = #empId#
+		   AND  b.bill_id = a.bill_id
+		   AND  c.bill_id = a.bill_id
+		   AND  d.host_id = a.host_user_id
+		   AND  d.cust_id = a.cust_user_id
+		   AND  c.item_id = e.item_id
+		   AND  e.user_id = #userId#
+		   AND  c.vendor_id = #userId#
+		   AND  f.item_id = e.item_id
+		   AND	f.item_no = #itemNo#
+		   AND  d.distribute_seq_no IS NOT NULL
+		   <isNotEmpty prepend="and" property="createDateFrom1">
+				<![CDATA[a.create_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateTo1">
+				<![CDATA[a.create_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+			</isNotEmpty>
+		ORDER BY distributeName, distributeNo
+	</select>
+	
+	<update id="rejectBill">
+		UPDATE  eos_bill_proc_new
+		   SET  note 		= #procNote#,
+		   		state 		= 'PS0003',
+		   		update_by 	= #updateBy#,
+		   		emp_id		= #empId#,
+		   		emp_nameok  = (SELECT emp_name FROM eos_emp_new WHERE emp_id = #empId#),
+		   		update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S')
+	     WHERE  bill_id     = #billId#
+	       AND  proc_dat_id = #workFlowId#
+	       AND  state = 'PS0001'
+	</update>
+	
+	<update id="updatePayBillDetailState">
+		UPDATE  eos_paybill_detail_new
+		   SET  state = #state#
+		 WHERE  bill_id = #billId#
+	</update>
+	
+	<update id="changeBillProcPrice">
+		UPDATE  eos_bill_line_new
+		   SET  qty2 = #qty2#,
+		   		price2 = #price2#,
+		   		tot2 = #qty2# * #price2#
+		 WHERE  bill_id = #billId#
+		   AND  item_id  = #itemId#
+	</update>
+	
+	<select id="getLastReceiptList" resultClass="supplyStatistic">
+		SELECT	c.item_name														AS itemName,
+				CONCAT(billItem.price2, '  (', billItem.createDate, ')')			AS lastPriceIn
+		  FROM 	eos_item_new c
+		  LEFT OUTER JOIN 
+		  		(
+		  			SELECT 	b.item_id			AS itemId,
+		  					b.price2			AS price2,
+		  					a.create_date		AS createDate
+		  			  FROM 	eos_bill_head_new a,
+		  			  		eos_bill_line_new b
+		  			 WHERE  a.bill_id = b.bill_id
+		  			   AND  a.cust_user_id = #userId#
+		  			   AND  a.bill_type = 'DT0002'
+		  			   AND	a.state = 'WS0002'
+				  	<isNotEmpty prepend="and" property="createDateFrom1">
+						<![CDATA[a.arrive_date >= CONCAT(#createDateFrom1#, ' 00:00:00')]]>
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="createDateTo1">
+						<![CDATA[a.arrive_date <= CONCAT(#createDateTo1#, ' 23:59:59') ]]>
+					</isNotEmpty>
+		  		) AS billItem
+		    ON c.item_id = billItem.itemId
+		WHERE c.item_no = #itemNo#
+		ORDER BY billItem.createDate DESC
+		LIMIT 1
+	</select>
+</sqlMap>

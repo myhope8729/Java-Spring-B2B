@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="itemStock">
+
+	<typeAlias alias="itemStock" type="com.kpc.eos.model.bill.ItemStockModel" />
+	
+	<select id="getItemStock" resultClass="itemStock">
+		SELECT  store_id	AS	storeId,
+				item_id		AS	itemId,
+				qty			AS	qty,
+				cost		AS	cost
+		  FROM  eos_item_stock_new
+		 WHERE  item_id = #itemId#
+		   AND  store_id = #storeId#
+	</select>
+	
+	<select id="getItemTotalCost" resultClass="itemStock">
+		SELECT  IFNULL(SUM(a.qty), 0)		AS	totalQty,
+				IFNULL(SUM(a.cost*qty), 0)	AS	totalCost
+		  FROM  eos_item_stock_new a,
+		  		(
+		  		SELECT store_id
+		  		  FROM eos_store_new
+		  		 WHERE user_id = #userId#
+		  		) b 
+		 WHERE  a.item_id = #itemId#
+		   AND	a.store_id = b.store_id
+		   AND	a.cost > 0
+	</select>
+	
+	<select id="getItemStockByBillLineList" resultClass="itemStock">
+		SELECT  a.item_id																AS itemId,
+				IFNULL(a.store_id,  
+				(SELECT store_id FROM eos_bill_head_new WHERE bill_id = #billId#))		AS storeId,
+				a.qty2																	AS billQty,
+				a.price2																AS billPrice,
+				b.qty																	AS qty,
+				b.item_id																AS stockItemId
+		  FROM  eos_bill_line_new a
+		  LEFT  OUTER JOIN eos_item_stock_new b
+		    ON  (a.item_id = b.item_id 
+		    	 AND IFNULL(a.store_id, (SELECT store_id FROM eos_bill_head_new WHERE bill_id = #billId#))  = b.store_id)
+		 WHERE  a.bill_id = #billId#
+	</select>
+	
+	<insert id="insertItemStock">
+		INSERT INTO eos_item_stock_new 
+		(
+			store_id, 
+			item_id, 
+			qty, 
+			cost, 
+			create_date, 
+			create_by, 
+			update_date, 
+			update_by
+		)
+		VALUES
+		(
+			#storeId#, 
+			#itemId#, 
+			#qty#,
+			#cost#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#updateBy# 
+		)
+	</insert>
+	
+	<update id="updateItemStock">
+		UPDATE  eos_item_stock_new
+		   SET  qty					= #qty#,
+		   	<isNotEmpty property="cost">
+				cost				= #cost#,
+			</isNotEmpty>
+				update_date			= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				update_by			= #updateBy#
+		 WHERE  store_id			= #storeId#
+		   AND  item_id				= #itemId#
+	</update>
+</sqlMap>

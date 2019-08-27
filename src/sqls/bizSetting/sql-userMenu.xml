@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="userMenu">
+
+	<typeAlias alias="userMenu" type="com.kpc.eos.model.bizSetting.UserMenuModel" />
+	
+	<select id="getUserMenuList" resultClass="userMenu">
+		SELECT um.id			AS 		id,
+			   um.user_id		AS 		userId,
+			   um.menu_name		AS 		menuName,
+			   um.menu_url		AS 		menuUrl,
+			   um.seq_no		AS 		seqNo,
+			   um.state			AS 		state
+		  FROM eos_menu_bar_new um
+		 WHERE um.user_id = #userId#
+		 <isNotEmpty prepend="and" property="state">
+			   um.state = #state#
+		 </isNotEmpty>
+	  ORDER BY um.id ASC
+	</select>
+
+	<update id="updateUserMenu">
+		UPDATE  eos_menu_bar_new
+		   SET  menu_name		= #menuName#,
+		   		menu_url		= #menuUrl#,
+		   		state			= #state#
+		 WHERE  user_id			= #userId#
+		   AND	id				= #id#
+	</update>
+	
+	<insert id="insertUserMenu">
+		INSERT INTO  eos_menu_bar_new
+					 (	user_id, menu_name, menu_url, state	)
+			 VALUES  (	#userId#, #menuName#, #menuUrl#, #state# )
+	</insert>
+	
+</sqlMap>

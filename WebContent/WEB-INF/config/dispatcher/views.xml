@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- JSON rendering -->
+    <bean name="jsonView" class="org.springframework.web.servlet.view.json.JsonView">
+		<property name="encoding"><value>UTF-8</value></property>
+		<property name="contentType"><value>text/plain</value></property>
+        <property name="jsonWriter">
+			<bean class="org.springframework.web.servlet.view.json.writer.sojo.SojoJsonStringWriter" scope="prototype">
+			    <property name="convertAllMapValues"><value>true</value></property>
+			</bean>
+        </property>
+    </bean> 
+	
+	<!-- tree rendering -->	
+	<bean name="treeView" class="com.kpc.eos.core.web.view.TreeView" />
+
+	<!-- excel download rendering -->
+    <bean name="excelView" class="com.kpc.eos.core.web.view.ExcelView" />
+
+	<!-- XML rendering -->
+	<bean name="xmlView" class="com.kpc.eos.core.web.view.XmlView" p:contentType="text/xml;charset=utf-8" />
+	
+	<!-- fie download rendering -->
+	<bean name="sendContentView" class="com.kpc.eos.core.web.view.SendContentView" p:fileNameCharSet="UTF-8"/>
+</beans>

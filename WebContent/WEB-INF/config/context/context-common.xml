@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+    <!--
+        **************************************************
+        * Application Configuration
+        **************************************************
+    -->
+    <!-- 
+	<bean id="applicationConfig" class="org.apache.commons.configuration.XMLConfiguration">
+		<constructor-arg type="java.lang.String" value="../config/application-configuration.xml" />
+	</bean>
+	 -->
+    <bean id="applicationConfig" class="org.apache.commons.configuration.CompositeConfiguration">
+        <constructor-arg>
+            <list>
+                <bean class="org.apache.commons.configuration.XMLConfiguration">
+                    <constructor-arg type="java.lang.String" value="../config/application-configuration.xml" />
+                </bean>
+                <bean class="org.apache.commons.configuration.XMLConfiguration">
+                    <constructor-arg type="java.lang.String" value="../config/static-configuration.xml" />
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+    
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties">
+            <bean class="org.springmodules.commons.configuration.CommonsConfigurationFactoryBean">
+               <property name="configurations">
+                    <list>
+                         <ref bean="applicationConfig"/>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <!--
+        **************************************************
+        * Persistence Layer
+        **************************************************
+    -->
+    <tx:annotation-driven />
+    
+    <bean id="transactionManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+        p:dataSource-ref="MYSQL_DS" />
+    
+    <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean"
+        p:dataSource-ref="MYSQL_DS"
+        p:configLocation="/WEB-INF/config/ibatis/sqlmap-config.xml">
+        <property name="mappingLocations">
+        	<list>
+        		<value>classpath*:sqls/**/sql-*.xml</value>
+        	</list>
+        </property>
+    </bean>
+
+    <!--
+        **************************************************
+        * Message Source
+        **************************************************
+    -->
+    <bean id="messageSource"
+        class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>/WEB-INF/messages/application_messages</value>
+            </list>
+        </property>
+        <property name="cacheSeconds" value="5" />
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+
+    <!--
+        **************************************************
+        * File Upload
+        **************************************************
+    -->
+	<bean id="multipartResolver" 
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+		p:maxUploadSize="${upload.system.maxsize}" 
+	/><!-- 10MB -->
+
+    <!--
+        **************************************************
+        * Common Service/Repository
+        **************************************************
+    -->
+    <bean id="baseService" abstract="true">
+        <property name="baseDAO" ref="baseDAO"/>
+    </bean>
+    
+    <bean id="baseDAO" class="com.kpc.eos.core.dao.BaseDAO">
+    	<property name="sqlMapClient" ref="sqlMapClient"/>
+    </bean>
+    
+</beans>

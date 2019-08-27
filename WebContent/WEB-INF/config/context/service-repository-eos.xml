@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	
+	<!-- File Upload -->
+	<bean id="fileService" class="com.kpc.eos.service.common.impl.FileServiceImpl" parent="baseService" />
+	
+	<!-- Code Group Service -->
+	<bean id="codeService" class="com.kpc.eos.service.system.impl.CodeServiceImpl" parent="baseService" />
+	
+	<!-- Menu Service-->
+	<bean id="menuService" class="com.kpc.eos.service.system.impl.MenuServiceImpl" parent="baseService" />
+	
+	<bean id="addrService" class="com.kpc.eos.service.common.impl.AddressServiceImpl" parent="baseService" />
+	
+	<!-- 1. System Data Management -->
+	<!-- User Management Service -->
+	<bean id="userService" class="com.kpc.eos.service.dataMng.impl.UserServiceImpl" parent="baseService" />
+	
+	<!-- Department Management Service -->
+	<bean id="departmentService" class="com.kpc.eos.service.dataMng.impl.DepartmentServiceImpl" parent="baseService" />
+	
+	<!-- 2. Business Setting Management -->
+   	<!-- User Item Management -->
+	<bean id="userItemService" class="com.kpc.eos.service.bizSetting.impl.UserItemServiceImpl" parent="baseService" />
+	<!-- Pay Type Management -->
+	<bean id="payTypeService" class="com.kpc.eos.service.bizSetting.impl.PayTypeServiceImpl" parent="baseService" />
+	<!-- Customer Type Management -->
+	<bean id="custTypeService" class="com.kpc.eos.service.bizSetting.impl.CustTypeServiceImpl" parent="baseService" />
+	<!-- Customer Setting Management -->
+	<bean id="hostCustService" class="com.kpc.eos.service.bizSetting.impl.HostCustServiceImpl" parent="baseService" />
+	<!-- Delivery Address Management -->
+	<bean id="deliveryAddrService" class="com.kpc.eos.service.bizSetting.impl.DeliveryAddrServiceImpl" parent="baseService" />
+	<!-- Store Service -->
+	<bean id="storeService" class="com.kpc.eos.service.bizSetting.impl.StoreServiceImpl" parent="baseService" />
+	
+	<!-- Business Setting Service -->
+	<bean id="bizSettingService" class="com.kpc.eos.service.bizSetting.impl.BizSettingServiceImpl" parent="baseService" />
+	<!-- Business Data Service -->
+	<bean id="bizDataService" class="com.kpc.eos.service.bizSetting.impl.BizDataServiceImpl" parent="baseService" />
+	<!-- Work Flow Service -->
+	<bean id="workFlowService" class="com.kpc.eos.service.bizSetting.impl.WorkFlowServiceImpl" parent="baseService" />
+	<!-- Menu Setting Service -->
+	<bean id="menuSettingService" class="com.kpc.eos.service.bizSetting.impl.MenuSettingServiceImpl" parent="baseService" />
+	<!-- Item Widget Service -->
+	<bean id="itemWidgetService" class="com.kpc.eos.service.bizSetting.impl.ItemWidgetServiceImpl" parent="baseService" />
+	<!-- Item Comment Service -->
+	<bean id="itemCommentService" class="com.kpc.eos.service.bizSetting.impl.ItemCommentServiceImpl" parent="baseService" />
+	<!-- User Menu Service -->
+	<bean id="userMenuService" class="com.kpc.eos.service.bizSetting.impl.UserMenuServiceImpl" parent="baseService" />
+	
+	
+	<!-- For admin services -->
+	<!-- Item Service -->
+	<bean id="itemService" class="com.kpc.eos.service.system.impl.ItemServiceImpl" parent="baseService" />
+	
+	
+	<!-- Bill Menu -->
+	<bean id="billService" class="com.kpc.eos.service.bill.impl.BillServiceImpl" parent="baseService" />
+	<bean id="itemStockService" class="com.kpc.eos.service.bill.impl.ItemStockServiceImpl" parent="baseService" />
+	<bean id="priceDetailService" class="com.kpc.eos.service.bill.impl.PriceDetailServiceImpl" parent="baseService" />
+	<bean id="infoService" class="com.kpc.eos.service.bill.impl.InfoServiceImpl" parent="baseService" />
+	
+	<!-- Bill Process Service -->
+	<bean id="billProcService" class="com.kpc.eos.service.billProcMng.impl.BillProcServiceImpl" parent="baseService" />
+
+	<!-- Statistic -->
+	<bean id="statisticService" class="com.kpc.eos.service.statistic.impl.StatisticServiceImpl" parent="baseService" />
+	<bean id="statisticSaleService" class="com.kpc.eos.service.statistic.impl.StatisticSaleServiceImpl" parent="baseService" />
+	
+	<!-- Page -->
+	<bean id="configPageService" class="com.kpc.eos.service.bizSetting.impl.ConfigPageServiceImpl" parent="baseService" />
+	<bean id="userPageService" class="com.kpc.eos.service.userPage.impl.UserPageServiceImpl" parent="baseService" />
+	
+	<!-- Comment Service -->
+	<bean id="commentService" class="com.kpc.eos.service.userPage.impl.CommentServiceImpl" parent="baseService" />
+	
+</beans>

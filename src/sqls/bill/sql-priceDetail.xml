@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="priceDetail">
+
+	<typeAlias alias="priceDetail" type="com.kpc.eos.model.bill.PriceDetailModel" />
+	
+	<insert id="insertPriceDetail">
+		INSERT INTO eos_price_detail_new
+		(
+			bill_id,
+			item_id,
+			user_id,
+			cost,
+			price,
+			qty,
+			total,
+			price_in,
+		  <isNotEmpty property="d11">
+			d11,
+		  </isNotEmpty>
+		  <isNotEmpty property="d12">
+			d12,
+		  </isNotEmpty>
+		  <isNotEmpty property="d21">
+			d21,
+		  </isNotEmpty>
+		  <isNotEmpty property="d22">
+			d22,
+		  </isNotEmpty>
+		  <isNotEmpty property="d31">
+			d31,
+		  </isNotEmpty>
+		  <isNotEmpty property="d32">
+			d32,
+		  </isNotEmpty>
+		  <isNotEmpty property="d41">
+			d41,
+		  </isNotEmpty>
+		  <isNotEmpty property="d42">
+			d42,
+		  </isNotEmpty>
+		  <isNotEmpty property="d51">
+			d51,
+		  </isNotEmpty>
+		  <isNotEmpty property="d52">
+			d52,
+		  </isNotEmpty>
+			note,
+			create_date,
+			create_by,
+			update_date,
+			update_by
+		)
+		VALUES
+		(
+			#billId#,
+			#itemId#,
+			#userId#,
+			#cost#,
+			#price#,
+			#qty#,
+			#total#,
+			#priceIn#,
+		  <isNotEmpty property="d11">
+			#d11#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d12">
+			#d12#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d21">
+			#d21#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d22">
+			#d22#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d31">
+			#d31#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d32">
+			#d32#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d41">
+			#d41#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d42">
+			#d42#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d51">
+			#d51#,
+		  </isNotEmpty>
+		  <isNotEmpty property="d52">
+			#d52#,
+		  </isNotEmpty>
+			#note#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#updateBy# 
+		)
+	</insert>
+	
+	<update id="updatePriceDetail">
+		UPDATE  eos_price_detail_new
+		   SET  update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   	<isNotEmpty property="d12">
+		   		d12 = #d12#,
+		   	</isNotEmpty>
+		   	<isNotEmpty property="d22">
+		   		d22 = #d22#,
+		   	</isNotEmpty>
+		   	<isNotEmpty property="d32">
+		   		d32 = #d32#,
+		   	</isNotEmpty>
+		   	<isNotEmpty property="d42">
+		   		d42 = #d42#,
+		   	</isNotEmpty>
+		   	<isNotEmpty property="d52">
+		   		d52 = #d52#,
+		   	</isNotEmpty>
+		   		note = #note#,
+		   		update_by = #updateBy#
+		 WHERE  bill_id = #billId#
+		   AND  item_id = #itemId#
+		   AND  user_id = #userId#
+	</update>
+	
+	<delete id="deletePriceDetailByBillId">
+		DELETE  FROM eos_price_detail_new WHERE  bill_id = #billId#
+	</delete>
+	
+	<select id="getPriceItemList" resultClass="priceDetail">
+		SELECT  ui.c1						AS c1,
+			    ui.c2						AS c2,
+			    ui.c3						AS c3,
+			    ui.c4						AS c4,
+			    ui.c5						AS c5,
+			    ui.c6						AS c6,
+			    ui.c7						AS c7,
+			    ui.c8						AS c8,
+			    ui.c9						AS c9,
+			    ui.c10						AS c10,
+			    ui.c11						AS c11,
+			    ui.c12						AS c12,
+			    ui.c13						AS c13,
+			    ui.c14						AS c14,
+			    ui.c15						AS c15,
+			    ui.c16						AS c16,
+			    ui.c17						AS c17,
+			    ui.c18						AS c18,
+			    ui.c19						AS c19,
+			    ui.c20						AS c20,
+			    pd.item_id					AS itemId,
+			    pd.price					AS price,
+			    pd.cost						AS cost,
+			    pd.qty						AS qty,
+			    pd.total					AS total,
+			    pd.note						AS note,
+			    pd.price_in					AS priceIn,
+			    pd.d11						AS d11,
+			    pd.d12						AS d12,
+			    pd.d21						AS d21,
+			    pd.d22						AS d22,
+			    pd.d31						AS d31,
+			    pd.d32						AS d32,
+			    pd.d41						AS d41,
+			    pd.d42						AS d42,
+			    pd.d51						AS d51,
+			    pd.d52						AS d52,
+			    ui.item_img_path			AS itemImgPath
+		  FROM  eos_user_item_new ui,
+		  		eos_price_detail_new pd
+		 WHERE  ui.user_id = #userId#
+		   AND  ui.item_id = pd.item_id
+		   AND  pd.bill_id = #billId#
+		   AND  ui.state = #state#
+		 ORDER BY ui.item_id
+	</select>
+	
+	<delete id="deletePriceDetail">
+		DELETE  FROM eos_price_detail_new WHERE  bill_id = #billId#
+	</delete>
+	
+	<select id="getAllItemsForPriceList" resultClass="priceDetail">
+		SELECT  ui.c1						AS c1,
+			    ui.c2						AS c2,
+			    ui.c3						AS c3,
+			    ui.c4						AS c4,
+			    ui.c5						AS c5,
+			    ui.c6						AS c6,
+			    ui.c7						AS c7,
+			    ui.c8						AS c8,
+			    ui.c9						AS c9,
+			    ui.c10						AS c10,
+			    ui.c11						AS c11,
+			    ui.c12						AS c12,
+			    ui.c13						AS c13,
+			    ui.c14						AS c14,
+			    ui.c15						AS c15,
+			    ui.c16						AS c16,
+			    ui.c17						AS c17,
+			    ui.c18						AS c18,
+			    ui.c19						AS c19,
+			    ui.c20						AS c20,
+			    ui.item_id					AS itemId,
+			    ui.price_in					AS priceIn,
+			    SUM(bl.qty2) 				AS qty,
+			    SUM(bl.tot2)				AS total
+		  FROM  eos_user_item_new ui,
+		  		eos_bill_head_new bh,
+		  		eos_bill_line_new bl
+		 WHERE  ui.user_id = #userId#
+		   AND  ui.item_id = bl.item_id
+		   AND  bh.bill_id = bl.bill_id
+		 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   ui.$catFieldName$ = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		   AND	bh.cust_user_id = #userId#
+		   AND	bh.bill_type = 'DT0002'
+		   AND	bh.create_date LIKE '$createDate$%'
+		   AND  ui.state = #state#
+		 GROUP BY ui.item_id
+	</select>
+	
+</sqlMap>

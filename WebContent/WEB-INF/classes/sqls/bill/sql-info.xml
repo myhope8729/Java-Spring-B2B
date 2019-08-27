@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="info">
+
+	<typeAlias alias="info" type="com.kpc.eos.model.bill.InfoModel" />
+	
+	<typeAlias alias="infoDetail" type="com.kpc.eos.model.bill.InfoDetailModel" />
+	
+	<typeAlias alias="infoAttach" type="com.kpc.eos.model.bill.InfoAttachmentModel" />
+	
+	<select id="getUserInfoList" resultClass="info">
+		SELECT  
+				info.id				 AS id,
+				info.line_id		 AS lineId,
+				info.user_id		 AS userId,
+				info.bill_id		 AS billId,
+				info.dno			 AS dno,
+				info.dtype			 AS dtype,
+				info.pnote			 AS pnote,
+				info.urltype		 AS urltype,
+				info.url			 AS url,
+				info.showmark		 AS showmark,
+				info.fontsize		 AS fontsize,
+				info.fontcolor		 AS fontcolor,
+				info.bgcolor		 AS bgcolor
+		  FROM  eos_info_new 	info
+		 WHERE
+				info.user_id		 = #userId#
+			<isNotEmpty prepend="and" property="billId">
+		    	info.bill_id = #billId#
+	 		</isNotEmpty>
+			<isNotEmpty prepend="and" property="showmark">
+		    	info.showmark = #showmark#
+	 		</isNotEmpty>
+	</select>
+	
+	<select id="getInfoDetailList" resultClass="infoDetail">
+		SELECT  
+				d.id				 AS id,
+				d.user_id			 AS userId,
+				d.bill_id			 AS billId,
+				d.line_id			 AS lineId,
+				d.dno				 AS dno,
+				d.itemid			 AS itemid,
+				d.show_yn			 AS showYn,
+				d.url_type			 AS urlType,
+				d.url				 AS url
+		  FROM  eos_info_detail_new d
+		 WHERE	d.user_id		 = #userId#
+			<isNotEmpty prepend="and" property="billId">
+		    	d.bill_id = #billId#
+	 		</isNotEmpty>
+			<isNotEmpty prepend="and" property="lineId">
+		    	d.line_id = #lineId#
+	 		</isNotEmpty>
+			<isNotEmpty prepend="and" property="showYn">
+		    	d.show_yn = #showYn#
+	 		</isNotEmpty>
+	</select>
+	
+	
+	<select id="countInfoAttachmentList" resultClass="Integer">
+		SELECT  count(*) cnt
+		  FROM  eos_info_attachment_new info
+		 WHERE	info.bill_id = #billId#
+	</select>
+	
+	<select id="getInfoAttachmentList" resultClass="infoAttach">
+		SELECT  info.id				 AS id,
+				info.bill_id		 AS billId,
+				info.attach_name	 AS attachName,
+				info.create_date	 AS createDate
+		  FROM  eos_info_attachment_new info
+		 WHERE	info.bill_id = #billId#
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getInfoAttachment" resultClass="infoAttach">
+		SELECT  info.id				 AS id,
+				info.bill_id		 AS billId,
+				info.attach_name	 AS attachName,
+				info.create_date	 AS createDate
+		  FROM  eos_info_attachment_new info
+		 WHERE	info.id = #id#
+	</select>
+	
+	<select id="getInfoAttachmentFilesList" resultClass="String">
+		SELECT  info.attach_name	 AS attachName
+		  FROM  eos_info_attachment_new info
+		 WHERE	info.bill_id = #billId#
+	</select>
+	
+	<select id="getInfoDetailFilesList" resultClass="String">
+		SELECT  d.url				 AS url
+		  FROM  eos_info_detail_new d
+		 WHERE	d.bill_id = #billId#
+	</select>
+	
+	
+	<insert id="insertInfo">
+		INSERT INTO eos_info_new
+		(
+			line_id,
+			user_id,
+			bill_id,
+			dno,
+			dtype,
+			pnote,
+			urltype,
+			url,
+			showmark,
+			fontsize,
+			fontcolor,
+			bgcolor,
+			create_date,
+			update_date,
+			create_by,
+			update_by
+		)
+		VALUES
+		(
+			#lineId#,
+			#userId#,
+			#billId#,
+			#dno#,
+			#dtype#,
+			#pnote#,
+			#urltype#,
+			#url#,
+			#showmark#,
+			#fontsize#,
+			#fontcolor#,
+			#bgcolor#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#,
+			#updateBy#
+		)
+	</insert>
+	
+	<insert id="insertInfoDetail">
+		INSERT INTO eos_info_detail_new
+		(
+			user_id,
+			bill_id,
+			line_id,
+			dno,
+			itemid,
+			show_yn,
+			url_type,
+			url
+		)
+		VALUES
+		(
+			#userId#,
+			#billId#,
+			#lineId#,
+			#dno#,
+			#itemid#,
+			#showYn#,
+			#urlType#,
+			#url#
+		)
+	</insert>
+	
+	<insert id="insertInfoAttachment">
+		INSERT INTO eos_info_attachment_new
+		(
+			bill_id,
+			attach_name,
+			create_date
+		)
+		VALUES
+		(
+			#billId#,
+			#attachName#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S')
+		)
+	</insert>
+	
+	
+	<update id="updateInfo">
+		UPDATE  eos_info_new 	info
+		   SET  
+				info.line_id		 = #lineId#,
+				info.user_id		 = #userId#,
+				info.bill_id		 = #billId#,
+				info.dno			 = #dno#,
+				info.dtype			 = #dtype#,
+				info.pnote			 = #pnote#,
+				info.urltype		 = #urltype#,
+				info.url			 = #url#,
+				info.showmark		 = #showmark#,
+				info.fontsize		 = #fontsize#,
+				info.fontcolor		 = #fontcolor#,
+				info.bgcolor		 = #bgcolor#,
+				info.update_date	 = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+				info.updated_by		 = #updatedBy#
+		 WHERE  
+				info.id				 = #id#
+	</update>
+	
+	<delete id="deleteInfoByBillId">
+		DELETE FROM eos_info_new WHERE bill_id = #billId#
+	</delete>
+	
+	<delete id="deleteInfoDetailByBillId">
+		DELETE FROM eos_info_detail_new WHERE bill_id = #billId#
+	</delete>
+	
+	<delete id="deleteInfoAttachmentByBillId">
+		DELETE FROM eos_info_attachment_new WHERE bill_id = #billId#
+	</delete>
+	
+	<select id="getDeleteImageList" resultClass="String">
+		SELECT  url	AS widgetContent
+		  FROM  eos_info_detail_new
+		 WHERE  user_id = #userId#
+		   AND  bill_id = #billId#
+		 <isNotEmpty prepend="and" property="imgNames">
+			    url NOT IN <iterate property="imgNames" open="(" close=")" conjunction=",">#imgNames[]#</iterate>
+		 </isNotEmpty>  
+	</select>
+	
+	<delete id="deleteInfoAttachment">
+		DELETE FROM eos_info_attachment_new WHERE id = #id#
+	</delete>
+	
+</sqlMap>

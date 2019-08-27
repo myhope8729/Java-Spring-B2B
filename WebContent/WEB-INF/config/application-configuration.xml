@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <application-name>EOS-BO</application-name>
+    <operation-mode>worker</operation-mode><!-- worker/dev/prod -->
+
+	<domain>
+		<prefix>true</prefix>
+	</domain>
+
+	<database>
+        <driverClassName>com.mysql.jdbc.Driver</driverClassName>
+		<url>jdbc:mysql://10.10.14.88:3306/eos</url>
+        <username>root</username>
+        <password>12345678</password>
+	</database>
+	
+	<message-locale>zh</message-locale>
+	
+	<!-- example message locale 
+	<message-locale>zh</message-locale>
+	<message-locale>ko</message-locale>
+	-->
+	
+	<webcontent-path>E:/working/workspace/PMA/WebContent/uploaded</webcontent-path>	
+	
+	<!-- upload file -->
+	<upload>
+		<base>
+			<localPhysical>E:/working/workspace/PMA/WebContent/uploaded</localPhysical>
+			<physical>
+				<images>/images</images>
+				<product>/product</product>
+			</physical>
+			<logical>
+				<images>/uploaded</images>
+				<product>/uploaded</product>
+			</logical>
+		</base>
+	</upload>
+</configuration>

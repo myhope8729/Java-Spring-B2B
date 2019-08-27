@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+	<upload>
+		<system>
+			<type>CONTENTS</type>
+			<path>/system</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<allow>png|gif|jpg|bmp</allow>
+			<deny>exe|php|sh|jsp|cgi|php3|php4|asp|cpp|obj|bat|com|py|pl|phps|class|java</deny>
+		</system>
+		
+		<productimage>
+			<type>images</type>
+			<path>/product</path>
+			<maxsize>204800</maxsize><!-- 1024*100*2= 200k -->
+			<!-- <width>1000</width>
+			<height>1000</height> -->
+			<allow>jpg|png|jpeg|gif|bmp</allow>
+			<deny>*</deny>
+		</productimage>
+		
+		<useritem>
+			<type>images</type>
+			<path>/useritem</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<minwidth>300</minwidth>
+			<minheight>200</minheight>
+			<allow>jpg|png|jpeg|gif</allow>
+			<deny>*</deny>
+		</useritem>
+		
+		<itemwidget>
+			<type>images</type>
+			<path>/itemwidget</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<allow>jpg|png|jpeg|gif</allow>
+			<deny>*</deny>
+		</itemwidget>
+		
+		<commentavatar>
+			<type>images</type>
+			<path>/commentavatar</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<allow>jpg|png|jpeg|gif</allow>
+			<deny>*</deny>
+		</commentavatar>
+		
+		<infoImg>
+			<type>images</type>
+			<path>/info_pic</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 10M -->
+			<allow>jpg|png|jpeg|gif|bmp</allow>
+			<deny>*</deny>
+		</infoImg>		
+		
+		<infoAttachment>
+			<type></type>
+			<path>/info_detail</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 10M -->
+			<allow>jpg|png|jpeg|gif|bmp</allow>
+			<deny>*</deny>
+		</infoAttachment>
+		
+		<commentpic>
+			<type>images</type>
+			<path>/commentpic</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<allow>jpg|png|jpeg|gif</allow>
+			<deny>*</deny>
+		</commentpic>
+		
+		<userlogo>
+			<type>images</type>
+			<path>/userlogo</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<allow>jpg|png|jpeg|gif</allow>
+			<deny>*</deny>
+		</userlogo>
+		
+		<pagebanner>
+			<type>images</type>
+			<path>/pagebanner</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<allow>jpg|png|jpeg|gif</allow>
+			<deny>*</deny>
+		</pagebanner>
+		
+		<pagedetail>
+			<type>images</type>
+			<path>/pagedetail</path>
+			<maxsize>100485760</maxsize><!-- 1024*1024*10 = 100M -->
+			<allow>jpg|png|jpeg|gif</allow>
+			<deny>*</deny>
+		</pagedetail>
+		
+	</upload>
+</configuration>	

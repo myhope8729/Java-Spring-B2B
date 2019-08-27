@@ -1,0 +1,1239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="userItem">
+
+	<typeAlias alias="userItem" type="com.kpc.eos.model.bizSetting.UserItemModel" />
+	<typeAlias alias="itemProperty" type="com.kpc.eos.model.bizSetting.UserItemPropertyModel" />
+	
+	<!-- For User Page -->
+	<typeAlias alias="uiCategory" type="com.kpc.eos.model.bizSetting.UserItemCategoryMdoel" />
+	
+	<select id="countUserItemList" resultClass="integer">
+		SELECT count(*)
+		  FROM eos_user_item_new ui
+		 WHERE ui.user_id = #userId#
+		 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   ui.$catFieldName$ = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			   ui.state = #state#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+	</select>
+	
+	<select id="getUserItemList" resultClass="userItem">
+		SELECT ui.item_id					AS 		itemId,
+			   ui.brand						AS		brand,
+			   ui.unit						AS		unit,
+			   ui.c1						AS 		c1,
+			   ui.c2						AS 		c2,
+			   ui.c3						AS 		c3,
+			   ui.c4						AS 		c4,
+			   ui.c5						AS 		c5,
+			   ui.c6						AS 		c6,
+			   ui.c7						AS 		c7,
+			   ui.c8						AS 		c8,
+			   ui.c9						AS 		c9,
+			   ui.c10						AS 		c10,
+			   ui.c11						AS 		c11,
+			   ui.c12						AS 		c12,
+			   ui.c13						AS 		c13,
+			   ui.c14						AS 		c14,
+			   ui.stock_mark				AS		stockMark,
+			   ui.state						AS		state,
+			   ui.item_img_path				AS		itemImgPath,
+			   (SELECT CONCAT(user_no, 
+			   		'<![CDATA[ <br/> ]]>', 
+			   				user_name)
+			   	  FROM eos_user_new 
+			   	 WHERE user_id = ui.vendor_id)
+			   								AS		vendor
+		  FROM eos_user_item_new ui
+		 WHERE ui.user_id = #userId#
+		 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   ui.$catFieldName$ = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			   ui.state = #state#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="countUserItemByGroupList" resultClass="integer">
+		SELECT COUNT(*)
+		  FROM eos_item_group_new a,
+		       eos_user_item_new  b
+		 WHERE a.item_id = b.item_id
+		   AND a.user_id = b.user_id
+		   <isNotEmpty prepend="and" property="userId">
+			   a.user_id = #userId#
+		   </isNotEmpty>
+		   <isNotEmpty prepend="and" property="groupId">
+			   a.seq_no = #groupId#
+		   </isNotEmpty>
+		   <isNotEmpty prepend="and" property="groupChelp">
+			   b.chelp LIKE CONCAT('%', #groupChelp#, '%')
+		   </isNotEmpty>
+	</select>
+	
+	<select id="getUserItemByGroupList" resultClass="userItem">
+		SELECT ui.item_id					AS 		itemId,
+			   ui.user_id					AS		userId,
+			   ui.brand						AS		brand,
+			   ui.unit						AS		unit,
+			   ui.c1						AS 		c1,
+			   ui.c2						AS 		c2,
+			   ui.c3						AS 		c3,
+			   ui.c4						AS 		c4,
+			   ui.c5						AS 		c5,
+			   ui.c6						AS 		c6,
+			   ui.c7						AS 		c7,
+			   ui.c8						AS 		c8,
+			   ui.c9						AS 		c9,
+			   ui.c10						AS 		c10,
+			   ui.c11						AS 		c11,
+			   ui.c12						AS 		c12,
+			   ui.c13						AS 		c13,
+			   ui.c14						AS 		c14,
+			   ui.stock_mark				AS		stockMark,
+			   ui.state						AS		state,
+			   ui.item_img_path				AS		itemImgPath
+		  FROM eos_item_group_new ig,
+		       eos_user_item_new  ui
+		 WHERE ig.item_id = ui.item_id
+		   AND ig.user_id = ui.user_id
+		   <isNotEmpty prepend="and" property="userId">
+			   ig.user_id = #userId#
+		   </isNotEmpty>
+		   <isNotEmpty prepend="and" property="groupId">
+			   ig.seq_no = #groupId#
+		   </isNotEmpty>
+		   <isNotEmpty prepend="and" property="groupChelp">
+			   ui.chelp LIKE CONCAT('%', #groupChelp#, '%')
+		   </isNotEmpty>
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="countUserItemExceptGroupList" resultClass="integer">
+		SELECT COUNT(*)
+		  FROM eos_user_item_new   a
+		 WHERE user_id = #userId#
+		   AND item_id NOT IN 
+		 	   (SELECT item_id 
+		 	      FROM eos_item_group_new
+		 	     WHERE user_id = #userId#
+		 	       AND seq_no = #groupId#)
+		   <isNotEmpty prepend="and" property="chelp">
+			   chelp LIKE CONCAT('%', #chelp#, '%')
+		   </isNotEmpty>
+		   <isNotEmpty prepend="and" property="category">
+		   		<isEqual property="category" compareValue="-1" open="(" close=")">
+			 	   $catFieldName$ = "" OR $catFieldName$ IS NULL 
+			 	</isEqual> 
+			 	<isNotEqual property="category" compareValue="-1">
+			 	   $catFieldName$ = #category#
+			 	</isNotEqual>
+		   </isNotEmpty>
+	</select>
+	
+	<select id="getUserItemExceptGroupList" resultClass="userItem">
+		SELECT item_id				AS 		itemId,
+			   brand				AS		brand,
+			   unit					AS		unit,
+			   c1					AS 		c1,
+			   c2					AS 		c2,
+			   c3					AS 		c3,
+			   c4					AS 		c4,
+			   c5					AS 		c5,
+			   c6					AS 		c6,
+			   c7					AS 		c7,
+			   c8					AS 		c8,
+			   c9					AS 		c9,
+			   c10					AS 		c10,
+			   c11					AS 		c11,
+			   c12					AS 		c12,
+			   c13					AS 		c13,
+			   c14					AS 		c14,
+			   stock_mark			AS		stockMark,
+			   state				AS		state,
+			   item_img_path		AS		itemImgPath
+		  FROM eos_user_item_new
+		 WHERE user_id = #userId#
+		   AND item_id NOT IN
+		       (SELECT item_id 
+		 	      FROM eos_item_group_new
+		 	     WHERE user_id = #userId#
+		 	       AND seq_no = #groupId#)
+		   <isNotEmpty prepend="and" property="chelp">
+			   chelp LIKE CONCAT('%', #chelp#, '%')
+		   </isNotEmpty>
+		   <isNotEmpty prepend="and" property="category">
+		   		<isEqual property="category" compareValue="-1" open="(" close=")">
+			 	   $catFieldName$ = "" OR $catFieldName$ IS NULL 
+			 	</isEqual> 
+			 	<isNotEqual property="category" compareValue="-1">
+			 	   $catFieldName$ = #category#
+			 	</isNotEqual>
+		   </isNotEmpty>
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getUserItem" resultClass="userItem">
+		SELECT  ui.item_id					AS 		itemId,
+			    ui.user_id					AS		userId,
+			    ui.unit						AS		unit,
+				ui.c1						AS 		c1,
+				ui.c2						AS 		c2,
+				ui.c3						AS 		c3,
+				ui.c4						AS 		c4,
+				ui.c5						AS 		c5,
+				ui.c6						AS 		c6,
+				ui.c7						AS 		c7,
+				ui.c8						AS 		c8,
+				ui.c9						AS 		c9,
+				ui.c10						AS 		c10,
+				ui.c11						AS 		c11,
+				ui.c12						AS 		c12,
+				ui.c13						AS 		c13,
+				ui.c14						AS 		c14,
+			   	ui.d1						AS 		d1,
+				ui.d2						AS 		d2,
+				ui.d3						AS 		d3,
+				ui.d4						AS 		d4,
+				ui.d5						AS 		d5,
+				ui.stock_mark				AS		stockMark,
+				ui.state					AS		state,
+				ui.item_img_path			AS		itemImgPath,
+				ui.price_in					AS		priceIn,
+				ui.vendor_id				AS		vendorId,
+				ui.store_id					AS		storeId,
+				ui.note						AS		note,
+				ui.js_yn					AS		jsYn,
+				
+				(SELECT  user_sys_value FROM  eos_userdat_new WHERE sys_code='0306' AND user_id = ui.user_id LIMIT 1)
+											AS		picShowMode,
+				(SELECT user_name FROM eos_user_new WHERE user_id = ui.user_id)
+											AS		vendor,
+				cp.price					AS 		custPrice
+		  FROM eos_user_item_new ui
+	LEFT JOIN  eos_custprice_new cp ON ui.user_id = cp.host_user_id
+		  AND  ui.item_id = cp.item_id 
+		 WHERE ui.item_id = #itemId#
+		   AND ui.user_id = #userId#
+	</select>
+	
+	<update id="updateUserItem">
+		UPDATE  eos_user_item_new
+		   SET  c1 				= #c1#,
+		   		c2				= #c2#,
+		   		c3				= #c3#,
+		   		c4				= #c4#,
+		   		c5				= #c5#,
+		   		c6				= #c6#,
+		   		c7				= #c7#,
+		   		c8				= #c8#,
+		   		c9				= #c9#,
+		   		c10				= #c10#,
+		   		c11				= #c11#,
+		   		c12				= #c12#,
+		   		c13				= #c13#,
+		   		c14				= #c14#,
+		   		store_id		= #storeId#,
+		   		stock_mark		= #stockMark#,
+		   		item_img_path	= #itemImgPath#,
+		   		vendor_id		= #userId#,
+		   		note			= #note#,
+		   		chelp			= #chelp#,
+		   		state			= #state#,
+		   		update_date		= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by		= #updateBy#
+		 WHERE  item_id			= #itemId#
+		   AND  user_id			= #userId#
+	</update>
+	
+	<update id="updateUserItemInReceipt">
+		UPDATE  eos_user_item_new
+		   SET  cost			= #cost#,
+		   		price_in		= #priceIn#,
+		   		last_vendor_id	= #lastVendorId#,
+		   		update_date		= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by		= #updateBy#
+		 WHERE  item_id			= #itemId#
+		   AND  user_id			= #userId#
+	</update>	
+	
+	<select id="getFieldList" resultClass="itemProperty">
+		SELECT	 b.user_id          							AS userId,
+		  		 IFNULL(b.property_name,a.property_name)	 	AS propertyName,
+		  		 IFNULL(b.property_desc,a.property_desc) 		AS propertyDesc,
+		  		 IFNULL(b.property_type_cd,a.property_type_cd) AS propertyTypeCd,
+		  		 IFNULL(b.property_value, 'N') 					AS propertyValue,
+		  		 IFNULL(b.display_yn, 'N') 						AS displayYn,
+		  		 IFNULL(b.print_yn, 'N') 						AS printYn,
+		  		 IFNULL(b.seq_no, a.seq_no)						AS seqNo,
+		  		 IFNULL(b.state, 'ST0002') 						AS state
+		  FROM 	 (SELECT *
+		      		FROM eos_item_desc_new
+		      	   WHERE user_id = 'EMPL00000000000') a
+		  LEFT 	OUTER JOIN (Select *
+		                   	  FROM eos_item_desc_new
+		                     WHERE user_id = #userId#) b
+		    	ON a.property_name = b.property_name
+		 WHERE 1 = 1
+		 <isNotEmpty property="propertyTypeCd" prepend="AND">
+		   		b.property_type_cd = #propertyTypeCd#   	
+		 </isNotEmpty>
+		 <isNotEmpty property="state" prepend="AND">
+		   		b.state   = #state#   	
+		 </isNotEmpty>
+		 ORDER BY  userId DESC, seqNo ASC
+	</select>
+	
+	<select id="getCategoryList" resultClass="String">
+		SELECT 	IF(IFNULL($catFieldName$, '') = '', '-1', $catFieldName$) as catName
+		  FROM  eos_user_item_new
+		 WHERE  user_id = #userId#
+		 GROUP  BY IFNULL($catFieldName$, '')			
+	</select>
+	
+	<!--  Order Form -->
+	<select id="getUserItemCategoryWithCountList" resultClass="java.util.HashMap">
+		SELECT	IFNULL($catFieldName$, '') 		as catName, 
+				count(*) 						as cnt 
+		  FROM  eos_user_item_new 
+		 WHERE  user_id = #userId#
+		   AND  state = 'ST0001'
+		 <isNotEmpty property="parentCatFieldName" prepend="AND">
+		 	<isEqual property="parentCatFieldValue" compareValue="-1" open="(" close=")">
+		 		$parentCatFieldName$ = "" OR $parentCatFieldName$ IS NULL 
+		 	</isEqual>
+		 	<isNotEqual property="parentCatFieldValue" compareValue="-1">
+		 		$parentCatFieldName$ = #parentCatFieldValue# 
+		 	</isNotEqual>
+		 </isNotEmpty> 
+		 <isNotEmpty property="chelp" prepend="AND">
+		 		chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+		 <isPropertyAvailable property="psql" prepend="">
+		 	$psql$
+		 </isPropertyAvailable>
+		<isNotEmpty property="catFieldName" prepend="">
+	  GROUP BY  IFNULL($catFieldName$, '')
+	  	</isNotEmpty>
+	</select>
+	
+	<delete id="deleteUserItemProperty">
+		DELETE FROM eos_item_desc_new
+		 WHERE user_id = #userId#
+	</delete>
+	
+	<insert id="insertUserItemProperty">
+		INSERT INTO  eos_item_desc_new
+					 (
+					 	user_id, seq_no, property_name, property_desc, property_type_cd, property_value, 
+					 	display_yn, print_yn, state, create_date, create_by, update_date, update_by
+					 )
+			 VALUES  (
+			 			#userId#, #seqNo#, #propertyName#, #propertyDesc#, #propertyTypeCd#, #propertyValue#,
+			 			#displayYn#, #printYn#, #state#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+						#createBy#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#
+			 		 )
+	</insert>
+	
+	<insert id="insertDefaultUserItemProperty">
+		INSERT INTO  eos_item_desc_new
+					 (
+					 	user_id, seq_no, property_name, property_desc, property_type_cd, property_value, 
+					 	display_yn, print_yn, state, create_date, create_by, update_date, update_by
+					 )
+		SELECT 	#userId#, seq_no, property_name, property_desc, property_type_cd, property_value, display_yn, print_yn, state, 
+				DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #empId#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #empId# 
+		  FROM  eos_item_desc_new
+		 WHERE  user_id = 'EMPL00000000000'
+	</insert>
+	
+	<insert id="insertItems">
+		INSERT  INTO  eos_user_item_new
+					 (
+					 	user_id, 
+					 	item_id, 
+					 	$itemName$, 
+					 	<isNotEmpty property="cat1" prepend="" >
+					 	$cat1$, 
+					 	</isNotEmpty>
+					 	<isNotEmpty property="cat2" prepend="" >
+					 	$cat2$, 
+					 	</isNotEmpty>
+					 	<isNotEmpty property="itemNo" prepend="" >
+					 	$itemNo$, 
+					 	</isNotEmpty>
+					 	<isNotEmpty property="unit" prepend="" >
+					 	$unit$, 
+					 	</isNotEmpty>
+					 	<isNotEmpty property="standard" prepend="" >
+					 	$standard$, 
+					 	</isNotEmpty>
+					 	<isNotEmpty property="manufacturer" prepend="" >
+					 	$manufacturer$, 
+					 	</isNotEmpty>
+					 	item_img_path,
+					 	vendor_id, 
+					 	chelp,
+					 	state, 
+					 	create_date, 
+					 	create_by, 
+					 	update_date, 
+					 	update_by
+					 )
+		SELECT 	#userId#, 
+				item_id, 
+				item_name, 
+				<isNotEmpty property="cat1" prepend="" >
+				class1, 
+				</isNotEmpty>
+				<isNotEmpty property="cat2" prepend="" >
+				class2, 
+				</isNotEmpty>
+				<isNotEmpty property="itemNo" prepend="" >
+			 	item_no,
+			 	</isNotEmpty>
+			 	<isNotEmpty property="unit" prepend="" >
+			 	unit, 
+			 	</isNotEmpty>
+			 	<isNotEmpty property="standard" prepend="" >
+			 	standard, 
+			 	</isNotEmpty>
+			 	<isNotEmpty property="manufacturer" prepend="" >
+			 	manufacturer, 
+			 	</isNotEmpty>
+				item_img_path, 
+				#userId#,
+				chelp,
+				state, 
+				DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+				#empId#, 
+				DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+				#empId# 
+		  FROM  eos_item_new
+		 WHERE  item_id IN <iterate property="itemIds" open="(" close=")" conjunction=",">#itemIds[]#</iterate>
+	</insert>
+	
+	<insert id="insertGroupItems">
+		INSERT  INTO  eos_item_group_new
+					 (
+					 	user_id, seq_no, item_id
+					 )
+		SELECT 	user_id, #groupId#, item_id 
+		  FROM  eos_user_item_new
+		 WHERE  user_id = #userId#
+		   AND	item_id IN <iterate property="itemIds" open="(" close=")" conjunction=",">#itemIds[]#</iterate>
+	</insert>
+	
+	<delete id="deleteGroupItem">
+		DELETE FROM eos_item_group_new WHERE user_id = #userId# AND item_id = #itemId# AND seq_no = #groupId#
+	</delete>
+	
+	<!-- ==================== Order Section ============================= -->
+	<select id="getUserItemPropertyList" resultClass="itemProperty">
+		SELECT  p.user_id 			as userId, 
+				p.seq_no 			as seqNo, 
+				p.field_name		as fieldName, 
+				p.field_type		as fieldType, 
+				p.property_name		as propertyName, 
+				p.property_desc		as propertyDesc, 
+				p.property_type_cd 	as propertyTypeCd, 
+				p.property_value 	as propertyValue, 
+				p.display_yn 		as displayYn, 
+				p.print_yn 			as printYn, 
+				p.state 			as state
+		  FROM  eos.eos_item_desc_new p 
+		 WHERE  p.user_id = #userId#
+		   AND	state = 'ST0001'
+		   AND  ((p.property_type_cd NOT IN ('PT0002', 'PT0003', 'PT0004')) OR (p.property_type_cd IS NULL))
+		   AND	p.display_yn = 'Y'
+	  ORDER BY  p.seq_no
+	</select>
+	
+	<select id="getUserItemNamePropertyList" resultClass="itemProperty">
+		SELECT  p.user_id 			as userId, 
+				p.seq_no 			as seqNo, 
+				p.field_name		as fieldName, 
+				p.field_type		as fieldType, 
+				p.property_name		as propertyName, 
+				p.property_desc		as propertyDesc, 
+				p.property_type_cd 	as propertyTypeCd, 
+				p.property_value 	as propertyValue, 
+				p.display_yn 		as displayYn, 
+				p.print_yn 			as printYn, 
+				p.state 			as state
+		  FROM  eos.eos_item_desc_new p 
+		 WHERE  p.user_id = #userId#
+		   AND	state = 'ST0001'
+		   AND  p.property_type_cd IN ('PT0001', 'PT0006', 'PT0007')
+		   AND	p.display_yn = 'Y'
+	  ORDER BY  p.property_type_cd
+	</select>
+	
+	<select id="getUserItemPricePropertyList" resultClass="itemProperty">
+		SELECT  p.user_id 			as userId, 
+				p.seq_no 			as seqNo, 
+				p.field_name		as fieldName, 
+				p.field_type		as fieldType, 
+				p.property_name		as propertyName, 
+				p.property_desc		as propertyDesc, 
+				p.property_type_cd 	as propertyTypeCd, 
+				p.property_value 	as propertyValue, 
+				p.display_yn 		as displayYn, 
+				p.print_yn 			as printYn, 
+				p.state 			as state
+		  FROM  eos.eos_item_desc_new p 
+		 WHERE  p.user_id = #userId#
+		   AND	state = 'ST0001'
+		   AND  p.property_type_cd = 'PT0002'
+	  ORDER BY  p.property_type_cd
+	</select>
+	
+	<!-- Non Numberic fields -->
+	<select id="getUserNNItemPropertyList" resultClass="itemProperty">
+		SELECT *
+		  FROM 
+		  	(
+				SELECT  p.user_id 			as userId, 
+						p.seq_no 			as seqNo, 
+						p.field_name		as fieldName, 
+						p.field_type		as fieldType, 
+						p.property_name		as propertyName, 
+						p.property_desc		as propertyDesc, 
+						p.property_type_cd 	as propertyTypeCd, 
+						p.property_value 	as propertyValue, 
+						p.display_yn 		as displayYn, 
+						p.print_yn 			as printYn, 
+						p.state 			as state
+				  FROM  eos.eos_item_desc_new p 
+				 WHERE  p.user_id = #userId#
+				   		AND p.state = 'ST0001'
+				        AND (p.property_type_cd != 'PT0002' OR p.property_type_cd IS NULL) 
+				        AND p.display_yn = 'Y'
+				        
+				 UNION
+				 
+				 SELECT p.user_id 			as userId, 
+						p.seq_no 			as seqNo, 
+						p.field_name		as fieldName, 
+						p.field_type		as fieldType, 
+						p.property_name		as propertyName, 
+						p.property_desc		as propertyDesc, 
+						p.property_type_cd 	as propertyTypeCd, 
+						p.property_value 	as propertyValue, 
+						p.display_yn 		as displayYn, 
+						p.print_yn 			as printYn, 
+						p.state 			as state
+				  FROM  eos.eos_item_desc_new p 
+				 WHERE  p.user_id = #userId#
+				   		AND p.state = 'ST0001'
+				        AND p.property_type_cd = 'PT0005'
+		  ) AS a
+		  ORDER BY  a.seqNo
+	</select>
+	
+	<select id="countUserItemListInOrder" resultClass="integer">
+		SELECT count(*)
+		  FROM eos_user_item_new ui
+		 WHERE ui.user_id = #userId#
+		   AND ui.state = 'ST0001'
+		 <isNotEmpty property="catFieldName" prepend="" >
+			 <isNotEmpty property="category" prepend="and" >
+			 	<isEqual property="category" compareValue="-1" open="(" close=")">
+			 	   ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+			 	</isEqual>
+			 	<isNotEqual property="category" compareValue="-1">
+			 	   ui.$catFieldName$ = #category#
+			 	</isNotEqual>
+			 </isNotEmpty>
+		 </isNotEmpty>
+		 <isNotEmpty property="catFieldName2" prepend="" >
+		 <isNotEmpty property="category2" prepend="and" >
+		 	<isEqual property="category2" compareValue="-1" open="(" close=")">
+		 	   ui.$catFieldName2$ = "" OR ui.$catFieldName2$ IS NULL 
+		 	</isEqual>
+		 	<isNotEqual property="category2" compareValue="-1">
+		 	   ui.$catFieldName2$ = #category2#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+		 <isPropertyAvailable prepend="" property="psql">
+			 <isNotEmpty prepend="" property="psql">
+			   	$psql$
+			 </isNotEmpty>
+		 </isPropertyAvailable>
+	</select>
+	
+	<select id="getUserItemListInOrder" resultClass="userItem">
+		SELECT  ui.item_id					AS 		itemId,
+				ui.user_id					AS		userId,
+				ui.unit						AS		unit,
+				ui.c1						AS 		c1,
+				ui.c2						AS 		c2,
+				ui.c3						AS 		c3,
+				ui.c4						AS 		c4,
+				ui.c5						AS 		c5,
+				ui.c6						AS 		c6,
+				ui.c7						AS 		c7,
+				ui.c8						AS 		c8,
+				ui.c9						AS 		c9,
+				ui.c10						AS 		c10,
+				ui.c11						AS 		c11,
+				ui.c12						AS 		c12,
+				ui.c13						AS 		c13,
+				ui.c14						AS 		c14,
+				ui.d1						AS 		d1,
+				ui.d2						AS 		d2,
+				ui.d3						AS 		d3,
+				ui.d4						AS 		d4,
+				ui.d5						AS 		d5,
+				ui.stock_mark				AS		stockMark,
+				ui.state					AS		state,
+				ui.item_img_path			AS		itemImgPath,
+				ui.price_in					AS		priceIn,
+				ui.note						AS		note,
+				ui.js_yn					AS		jsYn,
+				(SELECT  user_sys_value FROM  eos_userdat_new WHERE sys_code='0306' AND user_id = ui.user_id LIMIT 1)
+											AS		picShowMode,
+				cp.price					AS 		custPrice
+		  FROM  eos_user_item_new ui
+	 LEFT JOIN  eos_custprice_new cp ON ui.user_id = cp.host_user_id 
+	 	   AND  ui.item_id = cp.item_id
+				<isNotEmpty property="custUserId" prepend="AND" >
+				cp.cust_user_id = #custUserId#
+	 			</isNotEmpty>
+		 WHERE  ui.user_id = #userId#
+		   AND  ui.state = 'ST0001'
+		 <isNotEmpty property="catFieldName" prepend="" >
+			 <isNotEmpty property="category" prepend="and" >
+			 	<isEqual property="category" compareValue="-1" open="(" close=")">
+			 	    ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+			 	</isEqual>
+			 	<isNotEqual property="category" compareValue="-1">
+			 	    ui.$catFieldName$ = #category#
+			 	</isNotEqual>
+			 </isNotEmpty>
+		 </isNotEmpty>
+		 <isNotEmpty property="catFieldName2" prepend="" >
+			 <isNotEmpty property="category2" prepend="and" >
+			 	<isEqual property="category2" compareValue="-1" open="(" close=")">
+			 	    ui.$catFieldName2$ = "" OR ui.$catFieldName2$ IS NULL 
+			 	</isEqual>
+			 	<isNotEqual property="category2" compareValue="-1">
+			 	   ui.$catFieldName2$ = #category2#
+			 	</isNotEqual>
+			 </isNotEmpty>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+		 <isPropertyAvailable prepend="" property="psql">
+			 <isNotEmpty prepend="" property="psql">
+			   	$psql$
+			 </isNotEmpty>
+		 </isPropertyAvailable>
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<!-- 
+		If query param has an key as "includeStockQty", the following items should be included. 
+		Usage 1 :
+			billType, 	Constants.CONST_BILL_TYPE_DING
+			state,		Constants.WS_IN_PROCESS_BY_SELLER);
+		Usage 2 :
+			If custUserId is applied, we will join the host-cust table to get the price field.
+	-->
+	<select id="getUserItemListByIds" resultClass="userItem">
+		SELECT  ui.item_id					AS 		itemId,
+				ui.user_id					as 		userId,
+				ui.unit						AS		unit,
+				ui.c1						AS 		c1,
+				ui.c2						AS 		c2,
+				ui.c3						AS 		c3,
+				ui.c4						AS 		c4,
+				ui.c5						AS 		c5,
+				ui.c6						AS 		c6,
+				ui.c7						AS 		c7,
+				ui.c8						AS 		c8,
+				ui.c9						AS 		c9,
+				ui.c10						AS 		c10,
+				ui.c11						AS 		c11,
+				ui.c12						AS 		c12,
+				ui.c13						AS 		c13,
+				ui.c14						AS 		c14,
+				ui.d1						AS 		d1,
+			    ui.d2						AS 		d2,
+			    ui.d3						AS 		d3,
+			    ui.d4						AS 		d4,
+			    ui.d5						AS 		d5,
+				ui.stock_mark				AS		stockMark,
+				ui.state					AS		state,
+				ui.item_img_path			AS		itemImgPath,
+				ui.price_in					AS		priceIn,
+				ui.vendor_id				AS		vendorId,
+				ui.store_id					AS		storeId,
+				ui.note						AS		note,	
+				ui.js_yn					AS		jsYn,
+				ui.js_qty					AS		jsQty,
+				ui.cost						AS		cost,
+				(SELECT user_name FROM eos_user_new WHERE user_id = ui.user_id)
+											AS		vendor,
+				cp.price					AS 		custPrice,
+				<isNotEmpty property="custUserId">
+		   			hc.price_col			AS 		priceCol  
+		   		</isNotEmpty>
+				<isEmpty property="custUserId">
+		   			""						AS 		priceCol  
+		   		</isEmpty>
+				<isNotEmpty prepend="," property="includeStockQty">
+				IF (ui.stock_mark='Y', (
+					IFNULL((
+						SELECT IFNULL(qty, 0) FROM eos_item_stock_new s 
+						WHERE item_id = ui.item_id AND store_id = ui.store_id
+					), 0)
+					-
+					IFNULL((
+						SELECT SUM(IFNULL(qty2, 0)) FROM 
+							eos_bill_head_new bh, 
+							eos_bill_line_new bl  
+						WHERE bh.bill_id = bl.bill_id AND (bh.bill_type = 'DT0004' OR bh.bill_type = 'DT0008') AND state = #state# 
+							AND  bh.host_user_id = ui.user_id AND bl.item_id = ui.item_id AND bl.store_id = ui.store_id
+					), 0)),
+					0
+				) AS stockQty
+		   		</isNotEmpty>
+		  FROM  eos_user_item_new ui
+	 LEFT JOIN  eos_custprice_new cp ON ui.user_id = cp.host_user_id
+	 	   AND  ui.item_id = cp.item_id
+	 	   		<isNotEmpty property="custUserId">
+	 			,eos_hostcust_new hc
+	 			</isNotEmpty> 
+		 WHERE  ui.user_id = #userId#
+		   <isNotEmpty property="custUserId">
+		   AND	ui.user_id = hc.host_id
+		   AND  hc.cust_id = #custUserId#
+		   </isNotEmpty>
+		   AND  ui.item_id IN <iterate property="ids" open="(" close=")" conjunction=",">#ids[]#</iterate>
+	</select>
+	
+	
+	<select id="getBilledUserItemList" resultClass="userItem">
+		SELECT  bl.qty 						AS 		qty,  
+				bl.qty2 					AS 		qty2,  
+				bl.price 					AS 		price,
+				bl.price2 					AS 		price2,
+				bl.tot 						AS 		total_amt,
+				bl.tot2 					AS 		total_amt2,
+				bl.note 					AS 		item_note,
+				bl.js_qty 					AS 		js_qty,
+				bl.js_display 				AS 		js_display,
+				ui.user_id					AS 		userId,
+				ui.item_id					AS 		itemId,
+				ui.brand					AS		brand,
+				ui.unit						AS		unit,
+				ui.c1						AS 		c1,
+				ui.c2						AS 		c2,
+				ui.c3						AS 		c3,
+				ui.c4						AS 		c4,
+				ui.c5						AS 		c5,
+				ui.c6						AS 		c6,
+				ui.c7						AS 		c7,
+				ui.c8						AS 		c8,
+				ui.c9						AS 		c9,
+				ui.c10						AS 		c10,
+				ui.c11						AS 		c11,
+				ui.c12						AS 		c12,
+				ui.c13						AS 		c13,
+				ui.c14						AS 		c14,
+				ui.d1						AS 		d1,
+			    ui.d2						AS 		d2,
+			    ui.d3						AS 		d3,
+			    ui.d4						AS 		d4,
+			    ui.d5						AS 		d5,
+			    ui.note						AS		note,
+				ui.store_id					AS		storeId,
+				ui.cost						AS		cost,
+				ui.js_yn					AS		jsYn,
+				ui.js_qty					AS		jsQty,
+				ui.stock_mark				AS		stockMark,
+				ui.state					AS		state,
+				ui.item_img_path			AS		itemImgPath
+		  FROM  eos_user_item_new ui, 
+		  		eos_bill_line_new bl 
+		 WHERE  ui.state = 'ST0001' 
+		   AND bl.vendor_id = ui.vendor_id
+		   AND  ui.item_id = bl.item_id
+		   AND  bl.bill_id = #billId# 
+	</select>
+	
+	
+	<!-- ==================== End of Order Section ======================= -->
+	
+	<select id="getAllUserItemPropertyList" resultClass="itemProperty">
+		SELECT  p.user_id 			as userId, 
+				p.seq_no 			as seqNo, 
+				p.field_name		as fieldName, 
+				p.field_type		as fieldType, 
+				p.property_name		as propertyName, 
+				p.property_desc		as propertyDesc, 
+				p.property_type_cd 	as propertyTypeCd, 
+				p.property_value 	as propertyValue, 
+				p.display_yn 		as displayYn, 
+				p.print_yn 			as printYn, 
+				p.state 			as state
+		  FROM  eos.eos_item_desc_new p 
+		 WHERE  p.user_id = #userId#
+	   	   AND  p.state = 'ST0001'
+	  ORDER BY  p.seq_no
+	</select>
+	
+	<update id="updateUserItemInPrice">
+		UPDATE	eos_user_item_new
+		   SET  update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   	<isNotEmpty property="c1">
+	   			c1	= #c1#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c2">
+	   			c2	= #c2#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c3">
+	   			c3	= #c3#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c4">
+	   			c4	= #c4#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c5">
+	   			c5	= #c5#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c6">
+	   			c6	= #c6#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c7">
+	   			c7	= #c7#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c8">
+	   			c8	= #c8#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c9">
+	   			c9	= #c9#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c10">
+	   			c10	= #c10#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c11">
+	   			c11	= #c11#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c12">
+	   			c12	= #c12#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c13">
+	   			c13	= #c13#,
+	   		</isNotEmpty>
+	   		<isNotEmpty property="c14">
+	   			c14	= #c14#,
+	   		</isNotEmpty>
+	   			update_by = #updateBy#
+		 WHERE  user_id = #userId#
+		   AND	item_id	= #itemId#
+	</update>
+	
+	<select id="downLoadUserItemList" resultClass="userItem">
+		SELECT ui.item_id					AS 		itemId,
+			   ui.brand						AS		brand,
+			   ui.unit						AS		unit,
+			   ui.c1						AS 		c1,
+			   ui.c2						AS 		c2,
+			   ui.c3						AS 		c3,
+			   ui.c4						AS 		c4,
+			   ui.c5						AS 		c5,
+			   ui.c6						AS 		c6,
+			   ui.c7						AS 		c7,
+			   ui.c8						AS 		c8,
+			   ui.c9						AS 		c9,
+			   ui.c10						AS 		c10,
+			   ui.c11						AS 		c11,
+			   ui.c12						AS 		c12,
+			   ui.c13						AS 		c13,
+			   ui.c14						AS 		c14,
+			   ui.stock_qty					AS		stockQty,
+			   ui.state						AS		state
+		  FROM eos_user_item_new ui
+		 WHERE ui.user_id = #userId#
+		 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   ui.$catFieldName$ = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			   ui.state = #state#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+	</select>	
+
+<!-- ==================== Get Category2 List ======================= -->
+	
+    <select id="getCategory2List" resultClass="String">
+		SELECT	DISTINCT(ui.$catFieldName2$)
+		FROM 	EOS_USER_ITEM_NEW ui
+		WHERE 	ui.USER_ID = #userId# AND
+				ui.STATE = #state# AND
+				ui.$catFieldName2$ != ''
+				<isNotEmpty property="category" prepend="and">
+					<isEqual property="category" compareValue="-1" open="("
+						close=")">
+						ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+				 	</isEqual>
+					<isNotEqual property="category" compareValue="-1">
+						ui.$catFieldName$ = #category#
+				 	</isNotEqual>
+				</isNotEmpty>				
+    </select>
+    
+    <select id="getUserItemPrintPropertyList" resultClass="itemProperty">
+		SELECT  p.user_id 			as userId, 
+				p.seq_no 			as seqNo, 
+				p.field_name		as fieldName, 
+				p.field_type		as fieldType, 
+				p.property_name		as propertyName, 
+				p.property_desc		as propertyDesc, 
+				p.property_type_cd 	as propertyTypeCd, 
+				p.property_value 	as propertyValue, 
+				p.display_yn 		as displayYn, 
+				p.print_yn 			as printYn, 
+				p.state 			as state
+		  FROM  eos.eos_item_desc_new p 
+		 WHERE  p.user_id = #userId#
+		   		AND p.state = 'ST0001'
+		        AND (p.property_type_cd != 'PT0002' OR p.property_type_cd IS NULL) 
+		        AND p.print_yn = 'Y' 	
+	  ORDER BY  p.seq_no
+	</select>
+	
+	
+<!-- 
+	============================= User Page =========================================================
+-->
+	
+
+	<select id="countUserItemListInFront" resultClass="integer">
+		SELECT  count(*)
+		  FROM  eos_hostcust_new hc, 		   
+			  	eos_user_item_new ui,
+			  	eos_item_new i
+		 WHERE  hc.cust_id = #userId#
+		   AND  ui.user_id = hc.host_id
+		   AND  i.item_id = ui.item_id
+		   AND  i.state = 'ST0001'	
+		   AND  ui.state = 'ST0001'
+		   AND  hc.state = 'ST0001'
+		   AND  ui.state = 'ST0001'
+		   
+		 <isNotEmpty property="category" prepend="and" >
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+			    i.class1 = "" OR i.class1 IS NULL 
+			</isEqual>
+		 	<isNotEqual property="category" compareValue="-1">
+		 	    i.class1 = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty property="category2" prepend="and" >
+		 	<isEqual property="category2" compareValue="-1" open="(" close=")">
+			    i.class2 = "" OR i.class2 IS NULL 
+			</isEqual>
+		 	<isNotEqual property="category2" compareValue="-1">
+		 	    i.class2 = #category2#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+		 <isPropertyAvailable prepend="" property="psql">
+			 <isNotEmpty prepend="" property="psql">
+			   	$psql$
+			 </isNotEmpty>
+		 </isPropertyAvailable>
+	</select>
+	
+	<select id="getUserItemListInFront" resultClass="userItem">
+		SELECT  ui.user_id					AS 		userId,
+				ui.item_id					AS 		itemId,
+				ui.unit						AS		unit,
+				ui.c1						AS 		c1,
+				ui.c2						AS 		c2,
+				ui.c3						AS 		c3,
+				ui.c4						AS 		c4,
+				ui.c5						AS 		c5,
+				ui.c6						AS 		c6,
+				ui.c7						AS 		c7,
+				ui.c8						AS 		c8,
+				ui.c9						AS 		c9,
+				ui.c10						AS 		c10,
+				ui.c11						AS 		c11,
+				ui.c12						AS 		c12,
+				ui.c13						AS 		c13,
+				ui.c14						AS 		c14,
+				ui.d1						AS 		d1,
+				ui.d2						AS 		d2,
+				ui.d3						AS 		d3,
+				ui.d4						AS 		d4,
+				ui.d5						AS 		d5,
+				ui.stock_mark				AS		stockMark,
+				ui.state					AS		state,
+				ui.item_img_path			AS		itemImgPath,
+				ui.price_in					AS		priceIn,
+				ui.vendor_id				AS		vendorId,
+				ui.store_id					AS		storeId,
+				ui.note						AS		note,	
+				ui.js_yn					AS		jsYn,
+				ui.js_qty					AS		jsQty,
+				ui.cost						AS		cost,
+				(SELECT user_name FROM eos_user_new WHERE user_id = ui.user_id)
+											AS		vendor,
+				cp.price					AS 		custPrice,
+				
+				(SELECT  user_sys_value FROM  eos_userdat_new WHERE sys_code='0306' AND user_id = ui.user_id LIMIT 1)
+											AS		picShowMode,
+				
+				NOT (hc.price_col IS NULL OR hc.price_col = '' OR hc.price_desc IS NULL OR hc.price_desc = '' OR hc.custtype_id IS NULL) 			
+											AS 		hcConnected,  
+				hc.price_col				AS 		priceCol  
+		  FROM  eos_hostcust_new hc, 		   
+			  	eos_user_item_new ui
+	 LEFT JOIN  eos_custprice_new cp ON ui.user_id = cp.host_user_id 
+	 	   AND  ui.item_id = cp.item_id
+				, eos_item_new i
+		 WHERE  hc.cust_id = #userId#
+		   AND  ui.user_id = hc.host_id
+		   AND  i.item_id = ui.item_id
+		   AND  i.state = 'ST0001'	
+		   AND  ui.state = 'ST0001'
+		   AND  hc.state = 'ST0001'
+		   AND  ui.state = 'ST0001'
+		 <isNotEmpty property="category" prepend="and" >
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+			    i.class1 = "" OR i.class1 IS NULL 
+			</isEqual>
+		 	<isNotEqual property="category" compareValue="-1">
+		 	    i.class1 = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty property="category2" prepend="and" >
+		 	<isEqual property="category2" compareValue="-1" open="(" close=")">
+			    i.class2 = "" OR i.class2 IS NULL 
+			</isEqual>
+		 	<isNotEqual property="category2" compareValue="-1">
+		 	    i.class2 = #category2#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+		 <isPropertyAvailable prepend="" property="psql">
+			 <isNotEmpty prepend="" property="psql">
+			   	$psql$
+			 </isNotEmpty>
+		 </isPropertyAvailable>
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<!-- Get all categories with items' count -->
+	<select id="getItemClassesWithCountList" resultClass="uiCategory">
+		SELECT  IFNULL($parentCatFieldName$, '') 	as parentCatName, 
+				IFNULL($catFieldName$, '') 			as catName, 
+				count(*) 				as cnt 
+		  FROM  eos_hostcust_new 		hc, 		   
+			  	eos_user_item_new 		ui,
+			  	eos_item_new 			i
+		 WHERE  hc.cust_id = #userId#
+		   AND  ui.user_id = hc.host_id
+		   AND  i.item_id = ui.item_id
+		   AND  i.state = 'ST0001'	
+		   AND  ui.state = 'ST0001'
+		   AND  hc.state = 'ST0001'
+		   AND  ui.state = 'ST0001'
+				<isNotEmpty property="parentCatFieldName" prepend="AND">
+					<isNotEmpty property="parentCatFieldValue" prepend="">
+				 		<isEqual property="parentCatFieldValue" compareValue="-1" open="(" close=")">
+				 			$parentCatFieldName$ = "" OR $parentCatFieldName$ IS NULL 
+				 		</isEqual>
+				 		<isNotEqual property="parentCatFieldValue" compareValue="-1">
+				 			$parentCatFieldName$ = #parentCatFieldValue# 
+				 		</isNotEqual>
+			 		</isNotEmpty> 
+		 		</isNotEmpty> 
+				<isNotEmpty prepend="and" property="chelp">
+					ui.chelp LIKE CONCAT('%', #chelp#, '%')
+				</isNotEmpty>
+				<isPropertyAvailable prepend="" property="psql">
+					<isNotEmpty prepend="" property="psql">
+						$psql$
+					</isNotEmpty>
+				</isPropertyAvailable>
+	  GROUP BY  parentCatName, catName
+	</select>
+	
+	<update id="updateUserItemProperty">
+		UPDATE  eos_item_desc_new
+		   SET  property_desc		= #propertyDesc#,
+		   		property_type_cd	= #propertyTypeCd#,
+		   		property_value		= #propertyValue#,
+		   		display_yn			= #displayYn#,
+		   		print_yn			= #printYn#,
+		   		state				= #state#,
+		   		update_date			= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by			= #updateBy#
+		 WHERE  seq_no				= #seqNo#
+		   AND  user_id				= #userId#
+	</update>
+	
+	<select id="getUserItemDefaultPriceList" resultClass="itemProperty">
+		SELECT  p.user_id 			as userId, 
+				p.seq_no 			as seqNo, 
+				p.field_name		as fieldName, 
+				p.field_type		as fieldType, 
+				p.property_name		as propertyName, 
+				p.property_desc		as propertyDesc, 
+				p.property_type_cd 	as propertyTypeCd, 
+				p.property_value 	as propertyValue, 
+				p.display_yn 		as displayYn, 
+				p.print_yn 			as printYn, 
+				p.state 			as state
+		  FROM  eos.eos_item_desc_new p 
+		 WHERE  p.user_id = #userId#
+		   		AND p.state = 'ST0001'
+		        AND p.property_type_cd = 'PT0002'
+		        AND p.property_value = 'Y' 
+		        AND p.seq_no != #seqNo#
+	</select>
+	
+	<select id="checkExistsUserItemNo" resultClass="Integer">
+		SELECT  DISTINCT 1
+		  FROM  eos_user_item_new
+		 WHERE  user_id = #userId#
+		   AND  $itemNoCol$ = #itemNo#
+		   AND  item_id != #itemId#
+	</select>
+	<select id="getUserItemTypeWithCountList" resultClass="java.util.HashMap">
+		SELECT	ui.$catFieldName$ 		as catName, 
+				count(*) 				as cnt 
+		FROM  	eos_user_item_new 	ui
+		LEFT JOIN eos_pdat_line_new 	pl
+		ON	    ui.user_id = pl.user_id AND ui.$catFieldName$ = pl.c1
+		WHERE  	ui.user_id = #userId# AND
+				pl.user_id = #userId# AND
+		   		ui.state = 'ST0001' AND
+		   		pl.state = 'ST0001' AND
+		   		pl.code_id = 'BD0004'
+		<isNotEmpty property="catFieldName" prepend="">
+	  		GROUP BY  ui.$catFieldName$
+	  	</isNotEmpty>
+	  	ORDER BY 	pl.c2
+	</select>
+	
+	<select id="countUserItemListOnConfigPage" resultClass="integer">
+		SELECT count(*)
+		  FROM eos_user_item_new ui LEFT OUTER JOIN
+		   	   (
+		   		SELECT DISTINCT detail_img_path AS item_id 
+		   		  FROM eos_page_detail_new 
+		   		 WHERE user_id=#userId#
+		   		   AND detail_type = 'PI0004'
+		   	   ) b	ON ui.item_id = b.item_id  
+		 WHERE ui.user_id = #userId#
+		 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   ui.$catFieldName$ = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			   ui.state = #state#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+	</select>
+	
+	<select id="getUserItemListOnConfigPage" resultClass="userItem">
+		SELECT ui.item_id					AS 		itemId,
+			   ui.brand						AS		brand,
+			   ui.unit						AS		unit,
+			   ui.c1						AS 		c1,
+			   ui.c2						AS 		c2,
+			   ui.c3						AS 		c3,
+			   ui.c4						AS 		c4,
+			   ui.c5						AS 		c5,
+			   ui.c6						AS 		c6,
+			   ui.c7						AS 		c7,
+			   ui.c8						AS 		c8,
+			   ui.c9						AS 		c9,
+			   ui.c10						AS 		c10,
+			   ui.c11						AS 		c11,
+			   ui.c12						AS 		c12,
+			   ui.c13						AS 		c13,
+			   ui.c14						AS 		c14,
+			   ui.stock_mark				AS		stockMark,
+			   ui.state						AS		state,
+			   ui.item_img_path				AS		itemImgPath,
+			   IFNULL(b.item_id, 0)      	AS      firstpageItemId
+		  FROM eos_user_item_new ui LEFT OUTER JOIN
+		   	   (
+		   		SELECT DISTINCT detail_img_path AS item_id 
+		   		  FROM eos_page_detail_new 
+		   		 WHERE user_id=#userId#
+		   		   AND detail_type = 'PI0004'
+		   	   ) b	ON ui.item_id = b.item_id  
+		 WHERE ui.user_id = #userId#
+		 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   ui.$catFieldName$ = "" OR ui.$catFieldName$ IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   ui.$catFieldName$ = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			   ui.state = #state#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			   ui.chelp LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>	
+</sqlMap>

@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="workflow">
+
+	<typeAlias alias="workFlow" type="com.kpc.eos.model.bizSetting.WorkFlowModel" />
+	<typeAlias alias="employee" type="com.kpc.eos.model.bizSetting.EmployeeModel" />
+	<typeAlias alias="workFlowGroup" type="com.kpc.eos.model.bizSetting.WorkFlowGroupModel" />
+	<typeAlias alias="customer" type="com.kpc.eos.model.bizSetting.CustomerModel"/>
+	
+	<resultMap id="EmployResult" class="string">
+		<result property="empName"			column="emp_name" />
+	</resultMap>
+	
+	<resultMap id="EmpIdResult" class="string">
+		<result property="empId"			column="emp_id" />
+	</resultMap>
+		
+	<resultMap id="WorkFlowResult" class="workFlow">
+		<result property="workFlowId"		column="proc_dat_id"/>
+		<result property="userId"			column="user_id" />
+		<result property="workFlowType"		column="wf_type"/>
+		<result property="seqNo"			column="seq_no"/>
+		<result property="workFlowName"		column="bill_proc_name"/>
+		<result property="groupYn"			column="group_yn"/>
+		<result property="qtyYn"			column="qty_yn"/>
+		<result property="priceYn"			column="price_yn"/>
+		<result property="shipPriceYn"		column="ship_price_yn"/>
+		<result property="minCost"			column="min_cost"/>
+		<result property="maxCost"			column="max_cost"/>
+		<result property="distributeYn"		column="distribute_yn"/>
+		<result property="itemYn"			column="item_yn"/>
+		<result property="note"				column="note"/>
+		<result property="state"			column="state"/>
+	</resultMap>
+	
+	<resultMap id="WorkFlowResultForList" class="workFlow">
+		<result property="workFlowId"		column="proc_dat_id"/>
+		<result property="workFlowType"		column="wf_type"/>
+		<result property="userId"			column="user_id"/>
+		<result property="seqNo"			column="seq_no"/>
+		<result property="workFlowName"		column="bill_proc_name"/>
+		<result property="groupYn"			column="group_yn"/>
+		<result property="qtyYn"			column="qty_yn"/>
+		<result property="priceYn"			column="price_yn"/>
+		<result property="shipPriceYn"		column="ship_price_yn"/>
+		<result property="minCost"			column="min_cost"/>
+		<result property="maxCost"			column="max_cost"/>
+		<result property="state"			column="state"/>
+		<result property="empList"	   	 	column="proc_dat_id" select="workflow.getEmployeeList"/>
+		<result property="empIdList"		column="proc_dat_id" select="workflow.getEmployeeIdList"/>
+	</resultMap>
+		
+	<statement id="getEmployeeList" parameterClass="string" resultMap="EmployResult">
+		SELECT  b.emp_name
+		  FROM  eos_proc_emp_new a,
+		        eos_emp_new b
+		 WHERE  a.emp_id = b.emp_id
+		   AND  a.proc_dat_id = #value#
+		   AND  b.state = 'ST0001'
+	</statement>
+	
+	<statement id="getEmployeeIdList" parameterClass="string" resultMap="EmpIdResult">
+		SELECT  b.emp_id
+		  FROM  eos_proc_emp_new a,
+		        eos_emp_new b
+		 WHERE  a.emp_id = b.emp_id
+		   AND  a.proc_dat_id = #value#
+		   AND  b.state = 'ST0001'
+	</statement>
+	
+	<select id="getWorkFlowList" resultMap="WorkFlowResultForList">
+		SELECT  proc_dat_id,
+				wf_type,
+				user_id,
+				seq_no,
+				bill_proc_name,
+				group_yn,
+				qty_yn,
+				price_yn,
+				ship_price_yn,
+				ROUND(min_cost,0) AS min_cost,
+				ROUND(max_cost,0) AS max_cost,
+				state
+		  FROM  eos_proc_dat_new a
+		 WHERE  a.user_id = #userId#
+		 <isNotEmpty prepend="and" property="workFlowType">
+			    a.wf_type = #workFlowType#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			    a.state = #state#
+		 </isNotEmpty>
+		ORDER BY  $page.sidx$ $page.sord$
+		 <isEmpty property="pagingYn">
+		LIMIT #page.startRow#, #page.rows#
+		 </isEmpty>
+	</select>
+	
+	<select id="getTotalCountWorkFlowList" resultClass="Integer">
+		SELECT  COUNT(*)	AS cnt
+		  FROM  eos_proc_dat_new a
+		 WHERE  a.user_id = #userId#
+		 <isNotEmpty prepend="and" property="workFlowType">
+			    a.wf_type = #workFlowType#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			    a.state = #state#
+		 </isNotEmpty>
+	</select>
+	
+	<select id="getWorkFlow" resultMap="WorkFlowResult">
+		SELECT  proc_dat_id,
+				user_id,
+				seq_no,
+				wf_type,
+				bill_proc_name,
+				group_yn,
+				qty_yn,
+				price_yn,
+				ship_price_yn,
+				ROUND(min_cost,0) AS min_cost,
+				ROUND(max_cost,0) AS max_cost,
+				distribute_yn,
+				item_yn,
+				group_yn,
+				note,
+				state
+		  FROM  eos_proc_dat_new a
+		 WHERE  a.proc_dat_id 	= #workFlowId#
+	</select>
+	
+	<select id="getEmployeeCheckedList" resultClass="employee">
+		SELECT  a.emp_id 						AS empId,
+				a.emp_name						AS empName,
+				IF(b.emp_id IS NULL, 'N', 'Y') 	AS checked
+		  FROM  eos_emp_new a
+		  LEFT OUTER JOIN 
+		  		(SELECT  emp_id
+		  		   FROM  eos_proc_emp_new
+		  		  WHERE  proc_dat_id = #workFlowId#
+		  		) b
+		  	 ON a.emp_id = b.emp_id
+		 WHERE  a.user_id = #userId#
+	</select>
+	
+	<delete id="deleteProcEmployeeByProcId">
+		DELETE FROM eos_proc_emp_new WHERE proc_dat_id = #workFlowId#
+	</delete>
+	
+	<insert id="insertProcEmployee">
+		INSERT INTO eos_proc_emp_new
+		  (
+		  		proc_dat_id,		emp_id, 		create_date,		create_by
+		  )
+		 SELECT #workFlowId#,		emp_id,			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#
+		   FROM eos_emp_new
+		  WHERE emp_id IN <iterate property="empList" open="(" close=")" conjunction=",">#empList[]#</iterate>
+	</insert>
+	
+	<insert id="insertWorkFlow">
+		<selectKey resultClass="string" keyProperty="workFlowId">
+			SELECT get_tbl_next_id_value('eos_proc_dat_new')
+		</selectKey>
+		
+		INSERT INTO eos_proc_dat_new
+			(
+				proc_dat_id,					user_id,					wf_type,				seq_no,
+				bill_proc_name,					distribute_yn,				item_yn,				group_yn,
+				price_yn,						qty_yn,						ship_price_yn,			min_cost,
+				max_cost,						note,						state,
+				create_date,					create_by,					update_date,			update_by
+			)
+		SELECT  #workFlowId#,					#userId#,					#workFlowType#,
+				<isNotEmpty property="seqNo"> 
+				#seqNo#, 
+				</isNotEmpty>
+				<isEmpty property="seqNo">
+				(SELECT IFNULL(MAX(a.seq_no), 0) + 1 FROM eos_proc_dat_new a WHERE a.user_id = #userId# AND a.wf_type=#workFlowType#),
+				</isEmpty>
+				#workFlowName#,					#distributeYn#,				#itemYn#,				#groupYn#,
+				#priceYn#,						#qtyYn#,					#shipPriceYn#,			#minCost#,
+				#maxCost#,						#note#,						#state#,
+				DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,		DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#
+	</insert>
+	
+	<update id="updateWorkFlow">
+		UPDATE  eos_proc_dat_new
+		   SET  wf_type 		= #workFlowType#,
+		   		bill_proc_name	= #workFlowName#,
+		   		seq_no			= #seqNo#,
+		   		distribute_yn	= #distributeYn#,
+		   		item_yn			= #itemYn#,
+		   		group_yn		= #groupYn#,
+		   		price_yn		= #priceYn#,
+		   		qty_yn			= #qtyYn#,
+		   		ship_price_yn	= #shipPriceYn#,
+		   		min_cost		= #minCost#,
+		   		max_cost		= #maxCost#,
+		   		note			= #note#,
+		   		state			= #state#,
+		   		update_date		= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by		= #updateBy#
+		 WHERE	proc_dat_id 	= #workFlowId#
+		   AND  user_id			= #userId#		
+	</update>
+	
+	<delete id="deleteProcGroupCust">
+		DELETE FROM eos_proc_group_cust_new WHERE cust_id = #custId#
+	</delete>
+	
+	<insert id="insertProcGroupCust">
+		INSERT INTO eos_proc_group_cust_new
+			( proc_dat_id, 		seq_no,			cust_id)
+		 SELECT proc_dat_id,	seq_no,			#custUserId#
+		   FROM eos_proc_group_cust_new
+		  WHERE cust_id = #copyCustId#
+	</insert>
+	
+	<update id="updateSeqNo">
+		UPDATE  eos_proc_dat_new
+		   SET  seq_no = #seqNo#
+		 WHERE  proc_dat_id = #workFlowId#
+	</update>
+	
+	<select id="getWorkFlowGroupList" resultClass="workFlowGroup">
+		SELECT	proc_dat_id							AS workFlowId,
+				seq_no								AS seqNo,
+				group_name							AS workFlowGroupName,
+			   (SELECT c1
+				  FROM eos_pdat_line_new
+				 WHERE user_id = #userId#
+				   AND code_id = 'BD0004'
+				   AND seq_no = a.`condition`)		AS cond,
+				note								AS note,
+				state								AS state
+		  FROM  eos_proc_group_new a
+		 WHERE  proc_dat_id = #workFlowId#
+		 ORDER BY $page.sidx$ $page.sord$
+	     LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="countWorkFlowGroupList" resultClass="Integer">
+		SELECT	COUNT(*)
+		  FROM  eos_proc_group_new
+		 WHERE  proc_dat_id = #workFlowId#
+	</select>
+	
+	<select id="getWorkFlowGroupCustList" resultClass="string">
+		SELECT  d.cust_short_name
+		  FROM  eos_proc_dat_new a,
+		  		eos_proc_group_new b,
+		  		eos_proc_group_cust_new c,
+		  		eos_hostcust_new d
+		 WHERE  a.proc_dat_id 	= #workFlowId#
+		   AND  b.proc_dat_id 	= a.proc_dat_id
+		   AND  b.seq_no	  	= #seqNo#
+		   AND	c.proc_dat_id	= b.proc_dat_id
+		   AND  c.seq_no		= b.seq_no
+		   AND  d.host_id		= a.user_id
+		   AND  d.cust_id 		= c.cust_id 
+	</select>
+	
+	<select id="getWorkFlowGroupEmpList" resultClass="string">
+		SELECT	b.emp_name
+		  FROM	eos_proc_group_emp_new a,
+		  		eos_emp_new b
+		 WHERE  a.proc_dat_id 	= #workFlowId#
+		   AND	a.seq_no		= #seqNo#
+		   AND  a.emp_id = b.emp_id
+	</select>
+		
+	<select id="getWorkFlowGroup" resultClass="workFlowGroup">
+		SELECT  a.user_id					AS userId,
+				b.proc_dat_id				AS workFlowId,
+				b.seq_no					AS seqNo,
+				a.wf_type					AS workFlowType,
+				a.bill_proc_name			AS workFlowName,
+				b.group_name				AS workFlowGroupName,
+				b.`condition`				AS cond,
+				b.note						AS note,
+				b.state						AS state
+		  FROM  eos_proc_dat_new a,
+		        eos_proc_group_new b
+		 WHERE  a.proc_dat_id = b.proc_dat_id
+		   AND	a.proc_dat_id = #workFlowId#
+		   AND  b.seq_no	  = #seqNo#
+	</select>
+		
+	<select id="getWorkFlowGroupCustCheckedList" resultClass="customer">
+		SELECT  a.cust_short_name					AS custShortName,
+				a.cust_id							AS custId,
+				IF(b.cust_id IS NULL, 'N', 'Y') 	AS checked
+		  FROM  eos_hostcust_new a
+		  LEFT OUTER JOIN 
+		  		(SELECT  cust_id
+		  		   FROM  eos_proc_group_cust_new
+		  		  WHERE  proc_dat_id = #workFlowId# AND seq_no = #seqNo#) b
+		    ON  a.cust_id = b.cust_id
+		 WHERE  a.host_id = #userId#
+		   AND  a.cust_short_name != ''
+		ORDER BY a.cust_short_name
+	</select>
+	
+	<delete id="deleteWorkFlowGroupCust">
+		DELETE FROM eos_proc_group_cust_new WHERE proc_dat_id = #workFlowId# AND seq_no = #seqNo#
+	</delete>
+	
+	<insert id="insertWorkFlowGroupCust">
+		INSERT INTO eos_proc_group_cust_new
+		(
+			proc_dat_id,			seq_no,				cust_id
+		)
+		SELECT  #workFlowId#,		#seqNo#,			cust_id
+		  FROM  eos_hostcust_new
+		 WHERE  host_id = #userId#
+		   AND  cust_id IN <iterate property="custShortNameList" open="(" close=")" conjunction=",">#custShortNameList[]#</iterate>
+	</insert>
+	
+	<select id="getWorkFlowGroupEmployeeCheckedList" resultClass="employee">
+		SELECT  a.emp_id						AS empId,
+				a.emp_name						AS empName,
+				IF(b.emp_id IS NULL, 'N', 'Y')	AS checked
+		  FROM  eos_emp_new a
+		  LEFT  OUTER JOIN 
+		  (
+		  		SELECT  emp_id
+		  		  FROM  eos_proc_group_emp_new
+		  		 WHERE  proc_dat_id = #workFlowId#
+		  		   AND  seq_no		= #seqNo#
+		  ) b
+		    ON a.emp_id = b.emp_id
+		 WHERE a.user_id = #userId#
+	</select>
+	
+	<delete id="deleteWorkFlowGroupEmp">
+		DELETE FROM eos_proc_group_emp_new WHERE proc_dat_id = #workFlowId# AND seq_no = #seqNo#
+	</delete>
+	
+	<insert id="insertWorkFlowGroupEmp">
+		INSERT INTO eos_proc_group_emp_new
+		(
+			proc_dat_id,			seq_no,				emp_id
+		)
+		SELECT  #workFlowId#,		#seqNo#,			emp_id
+		  FROM  eos_emp_new
+		 WHERE  user_id = #userId#
+		   AND  emp_id IN <iterate property="empList" open="(" close=")" conjunction=",">#empList[]#</iterate>
+	</insert>
+	
+	<insert id="insertWorkFlowGroup">
+		INSERT INTO eos_proc_group_new
+			(
+				proc_dat_id,			seq_no,
+				group_name,				`condition`,				note,						state,
+				create_date,			create_by,				update_date,				update_by
+			)
+		SELECT #workFlowId#,			(SELECT IFNULL(MAX(seq_no), 0) + 1 FROM eos_proc_group_new WHERE proc_dat_id = #workFlowId#),
+			   #workFlowGroupName#,		#cond#,					#note#,						#state#,
+			   DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,		DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#
+	</insert>
+	
+	<update id="updateWorkFlowGroup">
+		UPDATE	eos_proc_group_new
+		   SET  group_name		= #workFlowGroupName#,
+		   		`condition`		= #cond#,
+		   		note			= #note#,
+		   		state			= #state#,
+		   		update_date		= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by		= #updateBy#
+		 WHERE  proc_dat_id		= #workFlowId#
+		   AND	seq_no			= #seqNo#
+	</update>
+	
+	<!--  Order  -->
+	<select id="getWorkFlowByBillList" resultClass="workFlow">
+		SELECT  a.proc_dat_id		as workFlowId,
+				a.wf_type			as workFlowType,
+				a.user_id			as userId,
+				a.seq_no			as seqNo,
+				a.bill_proc_name	as workFlowName,
+				a.group_yn			as groupYn,
+				a.qty_yn			as qtyYn,
+				a.price_yn			as priceYn,
+				a.ship_price_yn		as shipPriceYn,
+				a.distribute_yn		as distributeYn,
+				a.item_yn			as itemYn,
+				ROUND(a.min_cost,0) AS minCost,
+				ROUND(a.max_cost,0) AS maxCost,
+				u.user_name			AS userName,
+				u.user_no			AS userNo
+		  FROM  eos_proc_dat_new a,
+		  		eos_user_new u
+		 WHERE  a.state = 'ST0001' 
+		   AND  a.user_id = u.user_id
+		   AND  ( 1 = 0
+			 		<isNotEmpty prepend="or" property="custUserId">
+			 		( a.user_id = #custUserId# AND a.wf_type = #custWfType# ) 
+			 		</isNotEmpty>
+			 		<isNotEmpty prepend="or" property="hostUserId">
+			 		( a.user_id = #hostUserId# AND a.wf_type = #hostWfType# ) 
+			 		</isNotEmpty>
+		 		)  
+	  ORDER BY  a.wf_type, a.seq_no
+	</select>
+	
+	<select id="getNextWorkFlowOfCurUser" resultClass="workFlow">
+		SELECT  a.proc_dat_id		AS workFlowId,
+				a.wf_type			AS workFlowType,
+				a.user_id			AS userId,
+				a.seq_no			AS seqNo,
+				a.bill_proc_name	AS workFlowName,
+				a.group_yn			AS groupYn,
+				a.qty_yn			AS qtyYn,
+				a.price_yn			AS priceYn,
+				a.ship_price_yn		AS shipPriceYn,
+				a.distribute_yn		AS distributeYn,
+				a.item_yn			AS itemYn,
+				ROUND(a.min_cost,0) AS minCost,
+				ROUND(a.max_cost,0) AS maxCost,
+				c.user_name			AS userName,
+				c.user_no			AS userNo
+		  FROM  eos_proc_dat_new a,
+		  		(SELECT * FROM eos_proc_dat_new WHERE proc_dat_id = #workFlowId#) b,
+		  		eos_user_new c
+		 WHERE  a.user_id = b.user_id
+		   AND  a.wf_type = b.wf_type
+		   AND  a.user_id = c.user_id
+		<isNotEmpty property="totalAmt">
+		   AND  #totalAmt# >= a.min_cost
+		   AND  a.max_cost >= #totalAmt#
+		</isNotEmpty>
+		   AND  ( 1 = 0
+			 		<isNotEmpty prepend="or" property="custUserId">
+			 		( a.user_id = #custUserId# AND a.wf_type = #custWfType# ) 
+			 		</isNotEmpty>
+			 		<isNotEmpty prepend="or" property="hostUserId">
+			 		( a.user_id = #hostUserId# AND a.wf_type = #hostWfType# ) 
+			 		</isNotEmpty>
+		 		)
+		   AND  a.state = 'ST0001'
+		   AND  a.seq_no > b.seq_no
+		   LIMIT 1
+	</select>
+	
+	<select id="getNextWorkFlowOfThirdPartyUser" resultClass="workFlow">
+		SELECT  a.proc_dat_id		AS workFlowId,
+				a.wf_type			AS workFlowType,
+				a.user_id			AS userId,
+				a.seq_no			AS seqNo,
+				a.bill_proc_name	AS workFlowName,
+				a.group_yn			AS groupYn,
+				a.qty_yn			AS qtyYn,
+				a.price_yn			AS priceYn,
+				a.ship_price_yn		AS shipPriceYn,
+				a.distribute_yn		AS distributeYn,
+				a.item_yn			AS itemYn,
+				ROUND(a.min_cost,0) AS minCost,
+				ROUND(a.max_cost,0) AS maxCost,
+				a.user_no			AS userNo,
+				a.user_name			AS userName
+		  FROM  eos_proc_dat_new a,
+		  		eos_user_new b
+		 WHERE  a.state = 'ST0001'
+		   AND  #totalAmt# >= a.min_cost
+		   AND  a.max_cost >= #totalAmt#
+		   AND  a.user_id = b.user_id
+	 		<isNotEmpty prepend="AND" property="hostUserId">
+	 			a.user_id = #hostUserId# AND a.wf_type = #hostWfType#
+	 		</isNotEmpty>
+	  ORDER BY  a.seq_no ASC
+	  LIMIT 1
+	</select>
+	
+	<select id="getWFGroupListByCondition" resultClass="workFlowGroup">
+		SELECT  pg.proc_dat_id  AS workFlowId,
+				pg.seq_no		AS seqNo,
+				pg.condition 	AS cond
+		  FROM  eos_proc_group_new pg,
+		  		eos_proc_group_cust_new pgc 
+		 WHERE  pg.proc_dat_id = pgc.proc_dat_id 
+		   AND  pg.seq_no = pgc.seq_no 
+		   AND  pg.proc_dat_id = #workFlowId#
+		   AND  pgc.cust_id = #userId#
+	  ORDER BY  pg.seq_no ASC
+	</select>
+	
+	<select id="getWorkFlowEmpList" resultClass="employee">
+		SELECT  ue.emp_id 			AS empId,
+				ue.emp_name 		AS empName
+		  FROM  eos_proc_emp_new pe,
+		  		eos_emp_new ue 
+		 WHERE  pe.emp_id = ue.emp_id 
+		   AND  ue.state = 'ST0001' 
+		   AND  pe.proc_dat_id = #workFlowId#
+	</select>
+	
+	<select id="getWorkFlowGroupEmployeeList" resultClass="employee">
+		SELECT  ue.emp_id 			as empId,
+				ue.emp_name 		as empName
+		  FROM  eos_proc_group_emp_new pe,
+		  		eos_emp_new ue 
+		 WHERE  pe.emp_id = ue.emp_id
+		   AND 	ue.state = 'ST0001' 
+		   AND  pe.proc_dat_id = #workFlowId#
+		   AND  pe.seq_no = #seqNo#
+	</select>
+	
+</sqlMap>

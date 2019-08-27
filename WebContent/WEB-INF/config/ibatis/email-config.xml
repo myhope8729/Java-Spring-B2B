@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+    <settings
+        useStatementNamespaces="true"
+        enhancementEnabled="true"
+        cacheModelsEnabled="true" 
+        lazyLoadingEnabled="true" 
+        maxRequests="512"
+        maxSessions="128"
+        maxTransactions="32" 
+        defaultStatementTimeout="120" />
+        
+    <sqlMap resource="sqls/common/email-sql.xml"/>
+    
+</sqlMapConfig>
+
+

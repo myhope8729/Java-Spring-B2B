@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="item">
+
+	<typeAlias alias="item" type="com.kpc.eos.model.system.ItemModel" />
+	
+	<select id="countItemList" resultClass="integer">
+		SELECT  COUNT(*)
+	   	  FROM  eos_item_new
+	  	 WHERE  1 = 1
+	  	 <isNotEmpty prepend="and" property="userId">
+		   	    item_id NOT IN (SELECT item_id FROM eos_user_item_new WHERE user_id = #userId#)
+	  	 </isNotEmpty>
+	  	 <isNotEmpty prepend="and" property="chelp">
+	  	 		chelp LIKE CONCAT('%', #chelp#, '%')
+	  	 </isNotEmpty>
+	  	 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   class1 = "" OR class1 IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   class1 = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+	</select>
+	
+	<select id="getItemList" resultClass="item">
+		SELECT  item_id					AS itemId,
+				item_no					AS itemNo,
+				item_name				AS itemName,
+				class1					AS cat1,
+				class2					AS cat2,
+				item_img_path			AS itemImg,
+				standard				AS standard,
+				unit					AS unit,
+				manufacturer			AS manufacturer,
+				state					AS state
+		  FROM  eos_item_new
+		 WHERE  1=1
+		 <isNotEmpty prepend="and" property="userId">
+			   item_id NOT IN (SELECT item_id FROM eos_user_item_new WHERE user_id = #userId#)
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+	  	 		chelp LIKE CONCAT('%', #chelp#, '%')
+	  	 </isNotEmpty>
+	  	 <isNotEmpty prepend="and" property="category">
+		 	<isEqual property="category" compareValue="-1" open="(" close=")">
+		 	   class1 = "" OR class1 IS NULL 
+		 	</isEqual> 
+		 	<isNotEqual property="category" compareValue="-1">
+		 	   class1 = #category#
+		 	</isNotEqual>
+		 </isNotEmpty>
+		 ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getItem" resultClass="item">
+		SELECT  item_id					AS itemId,
+				item_no					AS itemNo,
+				item_name				AS itemName,
+				class1					AS cat1,
+				class2					AS cat2,
+				standard				AS standard,
+				unit					AS unit,
+				manufacturer			AS manufacturer,
+				item_barcode			AS barCode,
+				item_img_path			AS itemImg,
+				state					AS state
+		  FROM  eos_item_new
+		 WHERE  item_id = #itemId#
+	</select>
+	
+	<insert id="insertItem">
+		INSERT INTO eos_item_new
+		  (
+		  		item_id,				item_no,
+		  		item_name,				item_barcode,				class1,				class2,				manufacturer,
+		  		standard,				unit,						state,				item_img_path,		chelp,
+		  		create_date,			create_by,					update_date,		update_by
+		  )
+		  VALUES
+		  (
+		  		get_tbl_next_id_value('eos_item_new'),				#itemNo#,
+		  		#itemName#,				#barCode#,					#cat1#,				#cat2#,				#manufacturer#,
+		  		#standard#,				#unit#,						#state#, 			#itemImg#,			#chelp#,
+		  		DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),    		#createBy#,
+		  		DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),    		#updateBy#
+		  )
+	</insert>
+	
+	<update id="updateItem">
+		UPDATE  eos_item_new
+		   SET	item_name			= #itemName#,
+		   		item_no				= #itemNo#,
+		   		item_barcode		= #barCode#,
+		   		class1				= #cat1#,
+		   		class2				= #cat2#,
+		   		manufacturer		= #manufacturer#,
+		   		standard			= #standard#,
+		   		unit				= #unit#,
+		   		state				= #state#,
+		   		item_img_path		= #itemImg#,
+		   		chelp				= #chelp#,
+		   		update_date			= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by			= #updateBy#
+		 WHERE  item_id = #itemId#
+	</update>
+	
+	<select id="getCategoryList" resultClass="string">
+		SELECT  IF(IFNULL(class1, '') = '', '-1', class1) AS class1
+		  FROM  eos_item_new
+		 WHERE  1 = 1
+		 <isNotEmpty prepend="and" property="userId">
+			   item_id NOT IN (SELECT item_id FROM eos_user_item_new WHERE user_id = #userId#)
+		 </isNotEmpty>
+		 GROUP BY IFNULL(class1, '')
+	</select>
+	
+	<select id="checkExistsItemNo" resultClass="Integer">
+		SELECT  DISTINCT 1
+		  FROM  eos_item_new
+		 WHERE  item_no = #itemNo#
+		<isNotEmpty property="itemId" prepend="AND">
+	   			item_id NOT IN (SELECT item_id FROM eos_item_new WHERE item_id = #itemId#)
+	   </isNotEmpty>
+	</select>
+	
+	<update id="updateItemProperty">
+		UPDATE eos_user_item_new aa,
+			(
+			    SELECT 	idn.user_id,
+			   			MAX(IF(idn.property_type_cd = 'PT0001', idn.property_name, '')) item_code,
+			   			MAX(IF(idn.property_type_cd = 'PT0003', idn.property_name, '')) item_class1,
+						MAX(IF(idn.property_type_cd = 'PT0004', idn.property_name, '')) item_class2,
+						MAX(IF(idn.property_type_cd = 'PT0006', idn.property_name, '')) item_name,
+						MAX(IF(idn.property_type_cd = 'PT0007', idn.property_name, '')) item_unit,
+						MAX(IF(idn.property_type_cd = 'PT0008', idn.property_name, '')) item_standard,
+						MAX(IF(idn.property_type_cd = 'PT0009', idn.property_name, '')) item_manu
+				  FROM  eos_item_desc_new idn,
+				  		(SELECT DISTINCT user_id
+						   FROM eos_user_item_new 
+						  WHERE item_id = #itemId# ) a
+				 WHERE  idn.user_id = a.user_id
+				 GROUP BY 1
+			) bb,
+			(
+				SELECT 	ein.item_no,
+						ein.item_name,
+						ein.class1,
+						ein.class2,
+						ein.unit,
+						ein.standard,
+						ein.manufacturer
+				  FROM  eos_item_new ein
+				 WHERE  ein.item_id = #itemId#
+			) cc
+		SET aa.c1 =  CASE 	WHEN bb.item_code ='c1' THEN cc.item_no WHEN bb.item_class1 = 'c1' THEN cc.class1
+	                  		WHEN bb.item_class2 = 'c1' THEN cc.class2 WHEN bb.item_name = 'c1' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c1' THEN cc.unit WHEN bb.item_standard = 'c1' THEN cc.standard
+		                    WHEN bb.item_manu = 'c1' THEN cc.manufacturer ELSE aa.c1 END,
+	        aa.c2 =  CASE 	WHEN bb.item_code ='c2' THEN cc.item_no WHEN bb.item_class1 = 'c2' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c2' THEN cc.class2 WHEN bb.item_name = 'c2' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c2' THEN cc.unit WHEN bb.item_standard = 'c2' THEN cc.standard
+		                    WHEN bb.item_manu = 'c2' THEN cc.manufacturer ELSE aa.c2 END,
+	        aa.c3 =  CASE 	WHEN bb.item_code ='c3' THEN cc.item_no WHEN bb.item_class1 = 'c3' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c3' THEN cc.class2 WHEN bb.item_name = 'c3' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c3' THEN cc.unit WHEN bb.item_standard = 'c3' THEN cc.standard
+		                    WHEN bb.item_manu = 'c3' THEN cc.manufacturer ELSE aa.c3 END,
+	        aa.c4 =  CASE 	WHEN bb.item_code ='c4' THEN cc.item_no WHEN bb.item_class1 = 'c4' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c4' THEN cc.class2 WHEN bb.item_name = 'c4' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c4' THEN cc.unit WHEN bb.item_standard = 'c4' THEN cc.standard
+		                    WHEN bb.item_manu = 'c4' THEN cc.manufacturer ELSE aa.c4 END,
+	         aa.c5 =  CASE 	WHEN bb.item_code ='c5' THEN cc.item_no WHEN bb.item_class1 = 'c5' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c5' THEN cc.class2 WHEN bb.item_name = 'c5' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c5' THEN cc.unit WHEN bb.item_standard = 'c5' THEN cc.standard
+		                    WHEN bb.item_manu = 'c5' THEN cc.manufacturer ELSE aa.c5 END,
+	         aa.c6 =  CASE 	WHEN bb.item_code ='c6' THEN cc.item_no WHEN bb.item_class1 = 'c6' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c6' THEN cc.class2 WHEN bb.item_name = 'c6' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c6' THEN cc.unit WHEN bb.item_standard = 'c6' THEN cc.standard
+		                    WHEN bb.item_manu = 'c6' THEN cc.manufacturer ELSE aa.c6 END,
+	         aa.c7 =  CASE 	WHEN bb.item_code ='c7' THEN cc.item_no WHEN bb.item_class1 = 'c7' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c7' THEN cc.class2 WHEN bb.item_name = 'c7' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c7' THEN cc.unit WHEN bb.item_standard = 'c7' THEN cc.standard
+		                    WHEN bb.item_manu = 'c7' THEN cc.manufacturer ELSE aa.c7 END,
+	         aa.c8 =  CASE 	WHEN bb.item_code ='c8' THEN cc.item_no WHEN bb.item_class1 = 'c8' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c8' THEN cc.class2 WHEN bb.item_name = 'c8' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c8' THEN cc.unit WHEN bb.item_standard = 'c8' THEN cc.standard
+		                    WHEN bb.item_manu = 'c8' THEN cc.manufacturer ELSE aa.c8 END,
+		    aa.c9 =  CASE 	WHEN bb.item_code ='c9' THEN cc.item_no WHEN bb.item_class1 = 'c9' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c9' THEN cc.class2 WHEN bb.item_name = 'c9' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c9' THEN cc.unit WHEN bb.item_standard = 'c9' THEN cc.standard
+		                    WHEN bb.item_manu = 'c9' THEN cc.manufacturer ELSE aa.c9 END,
+		   aa.c10 =  CASE 	WHEN bb.item_code ='c10' THEN cc.item_no WHEN bb.item_class1 = 'c10' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c10' THEN cc.class2 WHEN bb.item_name = 'c10' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c10' THEN cc.unit WHEN bb.item_standard = 'c10' THEN cc.standard
+		                    WHEN bb.item_manu = 'c10' THEN cc.manufacturer ELSE aa.c10 END,
+		   aa.c11 =  CASE 	WHEN bb.item_code ='c11' THEN cc.item_no WHEN bb.item_class1 = 'c11' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c11' THEN cc.class2 WHEN bb.item_name = 'c11' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c11' THEN cc.unit WHEN bb.item_standard = 'c11' THEN cc.standard
+		                    WHEN bb.item_manu = 'c11' THEN cc.manufacturer ELSE aa.c11 END,
+		   aa.c12 =  CASE 	WHEN bb.item_code ='c12' THEN cc.item_no WHEN bb.item_class1 = 'c12' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c12' THEN cc.class2 WHEN bb.item_name = 'c12' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c12' THEN cc.unit WHEN bb.item_standard = 'c12' THEN cc.standard
+		                    WHEN bb.item_manu = 'c12' THEN cc.manufacturer ELSE aa.c12 END,
+		   aa.c13 =  CASE 	WHEN bb.item_code ='c13' THEN cc.item_no WHEN bb.item_class1 = 'c13' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c13' THEN cc.class2 WHEN bb.item_name = 'c13' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c13' THEN cc.unit WHEN bb.item_standard = 'c13' THEN cc.standard
+		                    WHEN bb.item_manu = 'c13' THEN cc.manufacturer ELSE aa.c13 END,
+		   aa.c14 =  CASE 	WHEN bb.item_code ='c14' THEN cc.item_no WHEN bb.item_class1 = 'c14' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c14' THEN cc.class2 WHEN bb.item_name = 'c14' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c14' THEN cc.unit WHEN bb.item_standard = 'c14' THEN cc.standard
+		                    WHEN bb.item_manu = 'c14' THEN cc.manufacturer ELSE aa.c14 END,
+		   aa.c15 =  CASE 	WHEN bb.item_code ='c15' THEN cc.item_no WHEN bb.item_class1 = 'c15' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c15' THEN cc.class2 WHEN bb.item_name = 'c15' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c15' THEN cc.unit WHEN bb.item_standard = 'c15' THEN cc.standard
+		                    WHEN bb.item_manu = 'c15' THEN cc.manufacturer ELSE aa.c15 END,
+		   aa.c16 =  CASE 	WHEN bb.item_code ='c16' THEN cc.item_no WHEN bb.item_class1 = 'c16' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c16' THEN cc.class2 WHEN bb.item_name = 'c16' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c16' THEN cc.unit WHEN bb.item_standard = 'c16' THEN cc.standard
+		                    WHEN bb.item_manu = 'c16' THEN cc.manufacturer ELSE aa.c16 END,
+		   aa.c17 =  CASE 	WHEN bb.item_code ='c17' THEN cc.item_no WHEN bb.item_class1 = 'c17' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c17' THEN cc.class2 WHEN bb.item_name = 'c17' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c17' THEN cc.unit WHEN bb.item_standard = 'c17' THEN cc.standard
+		                    WHEN bb.item_manu = 'c17' THEN cc.manufacturer ELSE aa.c17 END,
+		   aa.c18 =  CASE 	WHEN bb.item_code ='c18' THEN cc.item_no WHEN bb.item_class1 = 'c18' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c18' THEN cc.class2 WHEN bb.item_name = 'c18' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c18' THEN cc.unit WHEN bb.item_standard = 'c18' THEN cc.standard
+		                    WHEN bb.item_manu = 'c18' THEN cc.manufacturer ELSE aa.c18 END,
+		   aa.c19 =  CASE 	WHEN bb.item_code ='c19' THEN cc.item_no WHEN bb.item_class1 = 'c19' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c19' THEN cc.class2 WHEN bb.item_name = 'c19' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c19' THEN cc.unit WHEN bb.item_standard = 'c19' THEN cc.standard
+		                    WHEN bb.item_manu = 'c19' THEN cc.manufacturer ELSE aa.c19 END,
+		   aa.c20 =  CASE 	WHEN bb.item_code ='c20' THEN cc.item_no WHEN bb.item_class1 = 'c20' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'c20' THEN cc.class2 WHEN bb.item_name = 'c20' THEN cc.item_name
+		                    WHEN bb.item_unit = 'c20' THEN cc.unit WHEN bb.item_standard = 'c20' THEN cc.standard
+		                    WHEN bb.item_manu = 'c20' THEN cc.manufacturer ELSE aa.c20 END,
+		   aa.d1 =  CASE 	WHEN bb.item_code ='d1' THEN cc.item_no WHEN bb.item_class1 = 'd1' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'd1' THEN cc.class2 WHEN bb.item_name = 'd1' THEN cc.item_name
+		                    WHEN bb.item_unit = 'd1' THEN cc.unit WHEN bb.item_standard = 'd1' THEN cc.standard
+		                    WHEN bb.item_manu = 'd1' THEN cc.manufacturer ELSE aa.d1 END,
+		   aa.d2 =  CASE 	WHEN bb.item_code ='d2' THEN cc.item_no WHEN bb.item_class1 = 'd2' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'd2' THEN cc.class2 WHEN bb.item_name = 'd2' THEN cc.item_name
+		                    WHEN bb.item_unit = 'd2' THEN cc.unit WHEN bb.item_standard = 'd2' THEN cc.standard
+		                    WHEN bb.item_manu = 'd2' THEN cc.manufacturer ELSE aa.d2 END,
+		   aa.d3 =  CASE 	WHEN bb.item_code ='d3' THEN cc.item_no WHEN bb.item_class1 = 'd3' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'd3' THEN cc.class2 WHEN bb.item_name = 'd3' THEN cc.item_name
+		                    WHEN bb.item_unit = 'd3' THEN cc.unit WHEN bb.item_standard = 'd3' THEN cc.standard
+		                    WHEN bb.item_manu = 'd3' THEN cc.manufacturer ELSE aa.d3 END,
+		   aa.d4 =  CASE 	WHEN bb.item_code ='d4' THEN cc.item_no WHEN bb.item_class1 = 'd4' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'd4' THEN cc.class2 WHEN bb.item_name = 'd4' THEN cc.item_name
+		                    WHEN bb.item_unit = 'd4' THEN cc.unit WHEN bb.item_standard = 'd4' THEN cc.standard
+		                    WHEN bb.item_manu = 'd4' THEN cc.manufacturer ELSE aa.d4 END,
+		   aa.d5 =  CASE 	WHEN bb.item_code ='d5' THEN cc.item_no WHEN bb.item_class1 = 'd5' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'd5' THEN cc.class2 WHEN bb.item_name = 'd5' THEN cc.item_name
+		                    WHEN bb.item_unit = 'd5' THEN cc.unit WHEN bb.item_standard = 'd5' THEN cc.standard
+		                    WHEN bb.item_manu = 'd5' THEN cc.manufacturer ELSE aa.d5 END,
+		   aa.d6 =  CASE 	WHEN bb.item_code ='d6' THEN cc.item_no WHEN bb.item_class1 = 'd6' THEN cc.class1
+	                   		WHEN bb.item_class2 = 'd6' THEN cc.class2 WHEN bb.item_name = 'd6' THEN cc.item_name
+		                    WHEN bb.item_unit = 'd6' THEN cc.unit WHEN bb.item_standard = 'd6' THEN cc.standard
+		                    WHEN bb.item_manu = 'd6' THEN cc.manufacturer ELSE aa.d6 END
+		WHERE aa.user_id = bb.user_id	
+		  AND aa.item_id = #itemId#
+	</update>
+</sqlMap>

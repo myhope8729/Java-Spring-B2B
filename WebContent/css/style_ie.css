@@ -1,0 +1,17 @@
+.ie8 .container {
+	padding:0px;
+}
+.ie8 .ui-disabled span{
+	color: #eee !important;
+}
+.ui-pg-selbox{font-size: 12px !important;}
+
+td.cartBtns > a, td.cartBtns > input{
+	display: table-cell !important;
+}
+td.cartBtns > input{width: 50px !important; max-width: 60px;}
+
+#cartWrap input.qty{margin-left: 1px;}
+
+#menu a{outline-width:0;}
+

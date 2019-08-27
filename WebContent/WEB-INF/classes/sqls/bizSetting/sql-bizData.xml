@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="bizData">
+
+	<typeAlias alias="bizData" type="com.kpc.eos.model.bizSetting.BizDataModel" />
+		
+	<select id="getBizDataByCode" resultClass="bizData">
+		SELECT  code_id				AS codeId,
+				seq_no				AS seqNo,
+				c1					AS c1,
+				c2					AS c2,
+				c3					AS c3,
+				c4					AS c4,
+				c5					AS c5,
+				d1					AS d1,
+				d2					AS d2,
+				d3					AS d3,
+				d4					AS d4,
+				d5					AS d5
+		  FROM  eos_pdat_line_new
+		 WHERE  user_id = #userId#
+		   AND  code_id = #codeId#
+		   <isNotEmpty prepend="and" property="seqNo">
+			    seq_no = #seqNo#
+		   </isNotEmpty>
+		   AND  state = 'ST0001'
+	</select>
+	
+	<select id="getBizDataMainList" resultClass="bizData">
+		SELECT  code_id				AS codeId,
+				code_name			AS bizDataName
+		  FROM  eos_code_new
+		 WHERE  upper_code_id = 'BD0000'
+		   AND  use_yn = 'Y'
+	</select>
+	
+	<select id="getBizDataList" resultClass="bizData">
+		SELECT  code_id				AS codeId,
+				TRIM(c1)			AS c1,
+				TRIM(c2)			AS c2,
+				TRIM(c3)			AS c3,
+				TRIM(c4)			AS c4,
+				TRIM(c5)			AS c5,
+				0					AS seqNo
+		  FROM  eos_code_new
+		 WHERE  code_id = #codeId#
+		 
+		 UNION ALL
+		 
+		SELECT  code_id				AS codeId,
+				c1					AS c1,
+				c2					AS c2,
+				c3					AS c3,
+				c4					AS c4,
+				c5					AS c5,
+				seq_no				AS seqNo
+		  FROM  eos_pdat_line_new
+		 WHERE  user_id = #userId#
+		   AND  code_id = #codeId#
+		   AND  state = 'ST0001'
+	</select>
+	
+	<delete id="delBizDataByCodeId">
+		DELETE FROM eos_pdat_line_new WHERE user_id = #userId# AND code_id = #codeId#
+	</delete>
+	
+	<insert id="insertBizDataByCodeId">
+		INSERT INTO eos_pdat_line_new
+		(
+			user_id,			code_id,			seq_no,				state,
+			c1,					c2,					c3,					c4,					c5,
+			create_date,		create_by,			update_date,		update_by
+		)
+		VALUES
+		(
+			#userId#,			#codeId#,			#seqNo#,			'ST0001',
+			#c1#,				#c2#,				#c3#,				#c4#,				#c5#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #empId#,		DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #empId#
+		)
+	</insert>
+	
+	<delete id="delBizData">
+		DELETE FROM eos_pdat_line_new
+		 WHERE user_id = #userId#
+		   AND code_id = #codeId#
+		   AND seq_no IN <iterate property="seqNo" open="(" close=")" conjunction=",">#seqNo[]#</iterate>
+	</delete>
+	
+	<select id="getBizDataForHostCust" resultClass="bizData">
+		SELECT  b.c1				AS c1,
+				b.c2				AS c2,
+				b.c3				AS c3,
+				b.c4				AS c4,
+				b.c5				AS c5
+		  FROM 	eos_hostcust_new a,
+		  		eos_pdat_line_new b
+		 WHERE  a.host_id = #hostUserId#
+		   AND  a.cust_id = #custUserId#
+		   AND  a.car_seq_no = b.seq_no
+		   AND  b.code_id = #codeId#
+		   AND  b.user_id = #hostUserId#
+	</select>
+</sqlMap>

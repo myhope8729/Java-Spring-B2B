@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="empMenu">
+	<typeAlias alias="empMenuRight" type="com.kpc.eos.model.dataMng.EmpMenuRightModel" />
+
+	<select id="getEmpMenuRightList" resultClass="empMenuRight">
+ 		SELECT  		C.menu_id		AS menuId,
+				B.MENU_LEVEL 	AS LEVEL,
+				B.MENU_NAME		AS menuName,
+				B.SORT_NO		AS sortNo,
+				IFNULL((SELECT sort_no FROM eos_menu_new WHERE menu_id = B.upper_menu_id), B.sort_no) upperSortNo,
+				B.UPPER_MENU_ID AS upperMenuId,
+				IFNULL(A.menu_user_name, B.menu_name)	AS menuUserName,
+				IF(R.MENU_ID IS NULL, NULL, "Y") AS assigned
+		  FROM  eos_menu_set_new A 
+		  		RIGHT OUTER JOIN eos_userkind_menu_new C ON A.menu_id = C.menu_id AND A.user_id = #userId#
+				,eos_menu_new B
+				LEFT JOIN eos_right_new R ON R.MENU_ID = B.MENU_ID AND R.EMP_ID = #empId#
+		 WHERE  C.menu_id = B.menu_id 
+		   AND  B.STATE = 'ST0001'	    
+		   AND  C.user_kind = #userKind#
+		 ORDER BY 5,6,4
+	</select>
+	
+	<delete id="deleteEmpMenuRights">
+		DELETE FROM eos_right_new
+		 WHERE emp_id = #empId#
+	</delete>
+	
+	<insert id="insertEmpMenuRight">
+		INSERT INTO  eos_right_new (emp_id, menu_id, create_date, create_by)
+		     VALUES  (#empId#, #menuId#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#)
+	</insert>
+	
+</sqlMap>

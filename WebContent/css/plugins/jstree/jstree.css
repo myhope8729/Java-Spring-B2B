@@ -1,0 +1,13 @@
+#jstree {
+    background: #fff;
+    overflow:auto; 
+    max-height:500px;
+}
+#jstree a {
+	FONT-SIZE: 11.5px;
+}
+
+li a {
+	FONT-SIZE: 11.5px;
+}
+

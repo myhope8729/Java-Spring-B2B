@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="code">
+
+	<typeAlias alias="code" type="com.kpc.eos.model.system.CodeModel" />
+
+	<select id="findCodeList" resultClass="code">
+		SELECT 
+				CODE_ID AS codeId, UPPER_CODE_ID AS codeGroupId, CODE_NAME AS codeName, CODE_DESC AS codeDesc, 
+				USE_YN AS validYn
+		  FROM 	EOS_CODE_NEW
+		 WHERE	USE_YN <![CDATA[ <> ]]> 'N'
+				<isNotNull prepend="AND" property="codeGroupId">
+				UPPER_CODE_ID = #codeGroupId#
+				</isNotNull>
+				<isNotNull prepend="AND" property="codeId">
+				CODE_ID = #codeId#
+				</isNotNull>
+		 ORDER BY CODE_ID ASC
+	</select>
+	
+	<select id="findUseCodeList" resultClass="code">
+	     SELECT      CODE_ID 		AS codeId, 
+	                 UPPER_CODE_ID 	AS codeGroupId, 
+	                 CODE_NAME 		AS codeName, 
+	                 CODE_DESC 		AS codeDesc
+	                 <!-- ,UPPER_CODE_ID AS upperCodeId -->     
+		 FROM  		EOS_CODE_NEW    
+		 WHERE 		USE_YN = 'Y'    
+		 ORDER BY 	UPPER_CODE_ID, CODE_ID
+	</select>
+	
+	<select id="findUpperCodeList" resultClass="code">
+		SELECT 
+				CODE_ID AS codeId, UPPER_CODE_ID AS codeGroupId, IFNULL(CODE_NAME, CODE_DESC) AS codeName, CODE_DESC AS codeDesc, 
+				USE_YN AS validYn
+		  FROM 	EOS_CODE_NEW
+		 WHERE	upper_code_id IS NULL
+		 ORDER BY CODE_ID ASC
+	</select>		
+	
+	<select id="getCodelist" resultClass="code">
+		SELECT  code_id 						codeId,
+				code_name 						codeName,
+				code_desc 						codeDesc,
+				IFNULL(upper_code_id, code_id) 	upperCodeId,
+				(SELECT CONCAT(code_id, ': ', IFNULL(code_name,''), '  (', IFNULL(code_desc,'No Description'), ')') FROM eos_code_new WHERE code_id = IFNULL(A.upper_code_id,A.code_id)) upperCodeName,
+				IF(use_yn='Y', '正常', '禁用')	state,
+				use_yn							useYn,
+				c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
+		  FROM  eos_code_new A		
+		 WHERE  1 = 1
+		 		<isNotEmpty prepend="AND" property="scUpperCode">
+		 		upper_code_id = #scUpperCode#
+		 		</isNotEmpty>
+		 		<isNotEmpty prepend="AND" property="scCodeName">
+		 		code_name LIKE CONCAT('%', #scCodeName# '%')
+		 		</isNotEmpty>
+		 		<isNotEmpty prepend="AND" property="scValidYn">
+		 		use_yn = #scValidYn#
+		 		</isNotEmpty>
+		 ORDER BY $page.sidx$ $page.sord$
+	</select>
+	
+	<insert id="insertCode">
+		INSERT INTO eos_code_new
+			(code_id, upper_code_id, code_name, code_desc, use_yn)
+			SELECT CONCAT(SUBSTRING(#upperCodeId#,1,2), LPAD(CONV(IFNULL(SUBSTRING(MAX(code_id), 3), 0), 10, 10) + 1, 4, '0')) code_id,
+			       #upperCodeId#, #codeName#, #codeDesc#, #useYn#
+			  FROM eos_code_new 
+			 WHERE upper_code_id = #upperCodeId#
+	</insert>
+	
+	<update id="updateCode">
+		UPDATE	eos_code_new
+		   SET	code_name			= #codeName#,
+		   		code_desc	 		= #codeDesc#,
+		   		use_yn				= #useYn#
+		 WHERE	CODE_ID 			= #codeId#
+	</update>
+		
+</sqlMap>

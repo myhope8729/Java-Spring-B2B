@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- iBatis에서 sqlMap이 하나도 없으면 xml element  DTD 오유가 발생하는것을 회피하기 위한 더미 sqlMap -->
+<sqlMap namespace="dummy"></sqlMap>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+    <settings
+        useStatementNamespaces="true"
+        enhancementEnabled="true"
+        cacheModelsEnabled="false" 
+        lazyLoadingEnabled="true" 
+        maxRequests="512"
+        maxSessions="128"
+        maxTransactions="32" 
+        defaultStatementTimeout="600" />
+
+	<typeAlias alias="DAY" type="java.util.Date"/>
+	<typeHandler callback="com.kpc.eos.core.dao.mapping.DayTypeHandler" javaType="DAY"/>
+     
+    <sqlMap resource="sqls/sql-dummy.xml"/>
+    
+</sqlMapConfig>

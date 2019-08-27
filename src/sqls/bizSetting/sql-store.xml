@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="store">
+
+	<typeAlias alias="store" type="com.kpc.eos.model.bizSetting.StoreModel" />
+	
+	<select id="getStoreList" resultClass="store">
+		SELECT 	(SELECT dept_name
+				   FROM eos_dept_new
+				  WHERE dept_id = a.dept_id)		AS deptName,
+				(SELECT dept_no
+				   FROM eos_dept_new
+				  WHERE dept_id = a.dept_id)		AS deptNo,
+				dept_id								AS deptId,
+				store_id							AS storeId,
+				store_no							AS storeNo,
+				store_name							AS storeName,
+				note								AS note,
+				state								AS state
+		 FROM  eos_store_new a
+		WHERE  user_id = #userId#
+	 ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalCountStoreList" resultClass="Integer">
+		SELECT  COUNT(*) 	cnt
+		  FROM  eos_store_new a
+		 WHERE  user_id = #userId#
+	</select>
+	
+	<select id="getAllStoreList" resultClass="store">
+		SELECT 	store_id							AS storeId,
+				store_no							AS storeNo,
+				store_name							AS storeName,
+				state								AS state
+		  FROM  eos_store_new
+		 WHERE  user_id = #userId#
+		   AND  state = 'ST0001'
+	</select>
+	
+	<select id="getStore" resultClass="store">
+		SELECT  store_id				AS storeId,
+				user_id					AS userId,
+				dept_id					AS deptId,
+				store_no				AS storeNo,
+				store_name				AS storeName,
+				note					AS note,
+				state					AS state
+		  FROM  eos_store_new
+		 WHERE  store_id  = #storeId#
+	</select>
+	
+	<insert id="insertStore">
+		INSERT INTO  eos_store_new
+					 (
+					 	store_id,		user_id,		dept_id,			store_no,
+					 	store_name,		note,			state,				
+					 	create_date,	create_by,		update_date,		update_by
+					 )
+			 VALUES  (
+			 			get_tbl_next_id_value('eos_store_new'),		#userId#,	#deptId#,	#storeNo#,
+			 			#storeName#, 	#note#,			#state#,
+			 			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,
+			 			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#
+			 		 )
+	</insert>
+	
+	<update id="updateStore">
+		UPDATE  eos_store_new
+		   SET  dept_id			= #deptId#,
+		   		store_no		= #storeNo#,
+		   		store_name		= #storeName#,
+		   		note			= #note#,
+		   		state			= #state#,
+		   		update_date		= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by		= #updateBy#
+		 WHERE  store_id = #storeId#
+		   AND  user_id = #userId#
+	</update>
+	
+	<select id="checkExistStore" resultClass="Integer">
+		SELECT  DISTINCT 1
+		  FROM  eos_store_new
+		 WHERE  user_id = #userId#
+		   AND  store_no = #storeNo#
+		<isNotEmpty property="storeId" prepend="AND">
+	   			store_id NOT IN (SELECT store_id FROM eos_store_new WHERE store_id = #storeId#)
+		</isNotEmpty>
+	</select>
+</sqlMap>

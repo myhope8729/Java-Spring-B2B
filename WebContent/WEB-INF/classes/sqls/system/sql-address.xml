@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="address">
+
+	<typeAlias alias="Address" type="com.kpc.eos.model.common.AddressModel" />
+	
+	<select id="findProvinceList" resultClass="Address">
+		SELECT 
+				LOCATION_ID		AS		addressId,
+				LOCATION_NAME	AS		addressName,
+				LOCATION_LEVEL	AS		addressLevel
+		FROM 	EOS_LOCATIONS_NEW
+		WHERE	STATE = 'ST0001' 
+				AND	ISNULL(UPPER_LOCATION_ID)
+	</select>
+	
+	<select id="findChildLocationList" resultClass="Address">
+		SELECT 
+				LOCATION_ID			AS		addressId,
+				LOCATION_NAME		AS		addressName,
+				UPPER_LOCATION_ID	AS		upperAddress,
+				LOCATION_LEVEL		AS		addressLevel
+		FROM 	EOS_LOCATIONS_NEW
+		WHERE	STATE = 'ST0001' 
+		  AND   UPPER_LOCATION_ID = #upperId#
+	</select>
+	
+	<select id="getAddressByLocationId" resultClass="Address">
+		SELECT c.location_id 			level2Id,
+		       b.location_id 			level1Id,
+		       a.location_id 			level0Id,
+		       CONCAT(IFNULL(c.location_name,''), IFNULL(b.location_name,''), IFNULL(a.location_name,'')) fullLocationName,
+		       c.location_name			level2Name,
+		       b.location_name			level1Name,
+		       a.location_name  		level0Name
+		  FROM eos_locations_new a
+		  LEFT OUTER JOIN eos_locations_new b ON a.upper_location_id = b.location_id
+		  LEFT OUTER JOIN  eos_locations_new c ON b.upper_location_id = c.location_id
+		 WHERE a.location_id = #locationId#
+	</select>
+</sqlMap>

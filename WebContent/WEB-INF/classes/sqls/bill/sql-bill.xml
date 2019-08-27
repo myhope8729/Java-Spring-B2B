@@ -1,0 +1,983 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="bill">
+
+	<typeAlias alias="order" type="com.kpc.eos.model.bill.BillHeadModel" />
+	
+	<typeAlias alias="vendor" type="com.kpc.eos.model.bill.VendorModel" />
+	
+	<typeAlias alias="procGroup" type="com.kpc.eos.model.bill.ProcGroupModel" />
+	
+	<typeAlias alias="procEmp" type="com.kpc.eos.model.bill.ProcEmpModel" />
+	
+	<typeAlias alias="prePayBill" type="com.kpc.eos.model.billProcMng.PrepayBillModel" />
+	
+	<typeAlias alias="payBillDetail" type="com.kpc.eos.model.bill.PayBillDetailModel" />
+	
+	<select id="getBill" resultClass="order">
+		SELECT  h.bill_id					 as billId,
+				h.bill_type					 as billType,
+				h.rbill_type				 as rbillType,
+				h.rbill_id					 as rbillId,
+				<!-- h.arrive_date		 as arriveDate, -->
+				h.cust_user_id				 as custUserId,
+				h.cust_user_no				 as custUserNo,
+				h.cust_user_name			 as custUserName,
+				h.cust_short_name			 as custShortName,
+				h.cust_contact_name			 as custContactName,
+				h.cust_tel_no				 as custTelNo,
+				h.cust_qq_no				 as custQqNo,
+				h.cust_mobile_no			 as custMobileNo,
+				h.host_user_id				 as hostUserId,
+				h.host_user_no				 as hostUserNo,
+				h.host_user_name			 as hostUserName,
+				h.host_contact_name			 as hostContactName,
+				h.host_tel_no				 as hostTelNo,
+				h.host_qq_no				 as hostQqNo,
+				h.host_mobile_no			 as hostMobileNo,
+				h.addr_id					 as addrId,
+				h.addr_location_id			 as addrLocationId,
+				h.addr_location_name		 as addrLocationName,
+				h.addr_address				 as addrAddress,
+				h.addr_contact_name			 as addrContactName,
+				h.addr_tel_no				 as addrTelNo,
+				h.addr_qq					 as addrQq,
+				h.addr_mobile				 as addrMobile,
+				h.paytype_id				 as paytypeId,
+				h.paytype_name				 as paytypeName,
+				h.payment_type				 as paymentType,
+				h.pay_state					 as payState,
+				h.weixin_yn					 as weixinYn,
+				h.item_amt					 as itemAmt,
+				h.freight_amt				 as freightAmt,
+				h.total_amt					 as totalAmt,
+				h.itemamount2				 as itemamount2,
+				h.freightamount2			 as freightamount2,
+				h.total2					 as total2,
+				h.inputor_id				 as inputorId,
+				h.inputor_name				 as inputorName,
+				h.manager_id				 as managerId,
+				h.manager_name				 as managerName,
+				h.custtype_id				 as custtypeId,
+				h.custtype_name				 as custtypeName,
+				h.note						 as note,
+				h.brand						 as brand,
+				h.bno_user					 as bnoUser,
+				h.dept_id					 as deptId,
+				h.dept_no					 as deptNo,
+				h.dept_name					 as deptName,
+				h.store_id					 as storeId,
+				h.store_name				 as storeName,
+				h.store_note				 as storeNote,
+				h.deskno					 as deskno,
+				h.rbno_user					 as rbnoUser,
+				h.itemtype					 as itemtype,
+				h.itype						 as itype,
+				h.host_location_name		 as hostLocationName,
+				h.host_address				 as hostAddress,
+				h.hosttopic					 as hosttopic,
+				h.epaytype					 as epaytype,
+				h.freighttype				 as freighttype,
+				h.freight					 as freight,
+				h.webuno					 as webuno,
+				h.webstate					 as webstate,
+				h.rettot					 as rettot,
+				h.paytot					 as paytot,
+				h.recnum					 as recnum,
+				h.pricecol					 as pricecol,
+				h.pricedesc					 as pricedesc,
+				h.custpricemark				 as custpricemark,
+				h.hbmark					 as hbmark,
+				h.bill_proc					 as billProc,
+				h.proc_man					 as procMan,
+				h.info						 as info,
+				h.hostcustpsql				 as hostcustpsql,
+				h.webno						 as webno,
+				h.webbno					 as webbno,
+				h.groupmark					 as groupmark,
+				h.picnum					 as picnum,
+				h.tmpc1						 as tmpc1,
+				h.tmpc2						 as tmpc2,
+				h.tmpc3						 as tmpc3,
+				h.tmpc4						 as tmpc4,
+				h.tmpc5						 as tmpc5,
+				h.itemmark					 as itemmark,
+				h.bill_month				 as billMonth,
+				h.time1						 as time1,
+				h.time2						 as time2,
+				h.clerkno1					 as clerkno1,
+				h.clerkno2					 as clerkno2,
+				h.host_eno					 as hostEno,
+				h.date1						 as date1,
+				h.date2						 as date2,
+				h.top_num					 as topNum,
+				h.nostockmark				 as nostockmark,
+				h.state						 as state,
+				h.create_by					 as createBy,
+				h.update_date				 as updateDate,
+				h.update_by					 as updateBy,
+				h.create_date				 as createDate,  
+				DATE_FORMAT(h.arrive_date, '%Y-%m-%d')  arriveDate,
+				(SELECT emp_name
+				   FROM eos_emp_new
+				  WHERE emp_id = h.clerkno2)			AS clerkName,
+				(SELECT mobile_no
+				   FROM eos_emp_new
+				  WHERE emp_id = h.clerkno2)			AS clerkTelNo,
+				(SELECT fax_no
+				   FROM eos_user_new
+				  WHERE user_id = h.host_user_id)		AS hostFaxNo
+		  FROM  eos_bill_head_new h
+		 WHERE  h.bill_id = #billId#
+	</select>
+	
+	<select id="getOrderList" resultClass="order">
+		SELECT  h.bill_id 			billId,
+				h.bno_user			bnoUser,
+				h.bill_type 		billType,
+				h.rbill_type		rbillType,
+				h.host_user_id 		hostUserId,
+				h.host_user_name 	hostUserName,
+				h.total_amt 		totalAmt,
+				h.total2 			total2,
+				h.state 			state,
+				h.paytype_id		paytypeId,
+				h.paytype_name		paytypeName,
+				h.payment_type		paymentType,
+				h.store_id			storeId,
+				h.store_name		storeName,
+				h.bill_proc			billProc,
+				h.proc_man			procMan,
+				h.bno_user			bnoUser,
+				h.cust_user_name	custUserName,
+				h.inputor_name		inputorName,
+				
+				<!-- Info only-->
+				h.info				info,
+				h.itype				itype,
+				DATE_FORMAT(h.create_date, '%Y-%m-%d')  createDate,  
+				DATE_FORMAT(h.arrive_date, '%Y-%m-%d')  arriveDate  
+		  FROM  eos_bill_head_new h
+		 WHERE  h.bill_type = #billType#
+		   AND  (inputor_id = #inputorId# OR manager_id = #inputorId# OR inputor_id is null)
+		   		<isEqual prepend="" property="billType" compareValue="DT0004">	<!-- for order -->
+			   		<isNotEmpty prepend="and" property="custUserId"> 
+						h.cust_user_id = #custUserId#
+					</isNotEmpty>
+				</isEqual>
+		   		<isEqual prepend="" property="billType" compareValue="DT0008">	<!-- for sale -->
+			   		<isNotEmpty prepend="and" property="hostUserId"> 
+						h.host_user_id = #hostUserId#
+					</isNotEmpty>
+				</isEqual>
+				<isEqual prepend="" property="billType" compareValue="DT0005">	<!-- for 调价单 -->
+			   		<isNotEmpty prepend="and" property="hostUserId"> 
+						h.host_user_id = #hostUserId#
+					</isNotEmpty>
+				</isEqual>
+				<isEqual prepend="" property="billType" compareValue="DT0006">	<!-- for payment -->
+			   		<isNotEmpty prepend="and" property="hostUserId"> 
+						h.host_user_id = #hostUserId#
+					</isNotEmpty>
+				</isEqual>
+		   		<isNotEmpty prepend="and" property="billId"> 
+					h.bill_id LIKE CONCAT('%', #billId#, '%')
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[h.create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[h.create_date <= CONCAT(#createDateTo#, " 23:59:59")]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="arriveDateFrom">
+					<![CDATA[h.arrive_date >= #arriveDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="arriveDateTo">
+					<![CDATA[h.arrive_date <= CONCAT(#arriveDateTo#, " 23:59:59")]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="" property="vendorName">
+					<isEqual prepend="and" property="billType" compareValue="DT0004">	<!-- for order -->
+					h.host_user_name LIKE CONCAT('%', #vendorName#, '%')
+					</isEqual>
+					<isEqual prepend="and" property="billType" compareValue="DT0008">	<!-- for sale -->
+					h.cust_user_name LIKE CONCAT('%', #vendorName#, '%')
+					</isEqual>
+					<isEqual prepend="and" property="billType" compareValue="DT0002">	<!-- for receipt -->
+					h.host_user_name LIKE CONCAT('%', #vendorName#, '%')
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="hostCustName">
+					((h.rbill_type = 'DT0004' AND h.cust_user_name LIKE CONCAT('%', #hostCustName#, '%')) 
+					OR (h.rbill_type !='DT0004' AND h.host_user_name LIKE CONCAT('%', #hostCustName#, '%') ))
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="state">
+					h.state = #state#
+				</isNotEmpty>
+				<isEqual prepend="" property="billType" compareValue="DT0003">
+					<isNotEmpty prepend="and" property="itype">
+						h.itype = #itype#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="info">
+						h.info LIKE CONCAT('%', #info#, '%')
+					</isNotEmpty>
+				</isEqual>
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="countOrderList" resultClass="Integer">
+		SELECT  count(*) cnt
+		  FROM  eos_bill_head_new h
+		 WHERE  h.bill_type = #billType#
+		   AND  (inputor_id = #inputorId# OR manager_id = #inputorId# OR inputor_id is null)
+		   		<isEqual prepend="" property="billType" compareValue="DT0004">	<!-- for order -->
+			   		<isNotEmpty prepend="and" property="custUserId"> 
+						h.cust_user_id = #custUserId#
+					</isNotEmpty>
+				</isEqual>
+		   		<isEqual prepend="" property="billType" compareValue="DT0008">	<!-- for sale -->
+			   		<isNotEmpty prepend="and" property="hostUserId"> 
+						h.host_user_id = #hostUserId#
+					</isNotEmpty>
+				</isEqual>
+				<isEqual prepend="" property="billType" compareValue="DT0005">	<!-- for 调价单 -->
+			   		<isNotEmpty prepend="and" property="hostUserId"> 
+						h.host_user_id = #hostUserId#
+					</isNotEmpty>
+				</isEqual>
+				<isEqual prepend="" property="billType" compareValue="DT0006">	<!-- for payment -->
+			   		<isNotEmpty prepend="and" property="hostUserId"> 
+						h.host_user_id = #hostUserId#
+					</isNotEmpty>
+				</isEqual>
+		   		<isNotEmpty prepend="and" property="billId"> 
+					h.bill_id LIKE CONCAT('%', #billId#, '%')
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[h.create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[h.create_date <= CONCAT(#createDateTo#, " 23:59:59")]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="arriveDateFrom">
+					<![CDATA[h.arrive_date >= #arriveDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="arriveDateTo">
+					<![CDATA[h.arrive_date <= CONCAT(#arriveDateTo#, " 23:59:59")]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="" property="vendorName">
+					<isEqual prepend="and" property="billType" compareValue="DT0004">	<!-- for order -->
+					h.host_user_name LIKE CONCAT('%', #vendorName#, '%')
+					</isEqual>
+					<isEqual prepend="and" property="billType" compareValue="DT0008">	<!-- for sale -->
+					h.cust_user_name LIKE CONCAT('%', #vendorName#, '%')
+					</isEqual>
+					<isEqual prepend="and" property="billType" compareValue="DT0002">	<!-- for receipt -->
+					h.host_user_name LIKE CONCAT('%', #vendorName#, '%')
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="hostCustName">
+					((h.rbill_type = 'DT0004' AND h.cust_user_name LIKE CONCAT('%', #hostCustName#, '%') ) 
+					OR (h.rbill_type !='DT0004' AND h.host_user_name LIKE CONCAT('%', #hostCustName#, '%') ))
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="state">
+					h.state = #state#
+				</isNotEmpty>
+				
+				<isEqual prepend="" property="billType" compareValue="DT0003">
+					<isNotEmpty prepend="and" property="itype">
+						h.itype = #itype#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="info">
+						h.info LIKE CONCAT('%', #info#, '%')
+					</isNotEmpty>
+				</isEqual>
+	</select>
+	
+	
+	<update id="updateBillHead">
+		UPDATE  eos_bill_head_new
+		   SET  bill_id				= #billId#,
+				bill_type			= #billType#,
+				rbill_type			= #rbillType#,
+				rbill_id			= #rbillId#,
+				arrive_date			= #arriveDate#,
+				cust_user_id		= #custUserId#,
+				cust_user_no		= #custUserNo#,
+				cust_user_name		= #custUserName#,
+				cust_short_name		= #custShortName#,
+				cust_contact_name	= #custContactName#,
+				cust_tel_no			= #custTelNo#,
+				cust_qq_no			= #custQqNo#,
+				cust_mobile_no		= #custMobileNo#,
+				host_user_id		= #hostUserId#,
+				host_user_no		= #hostUserNo#,
+				host_user_name		= #hostUserName#,
+				host_contact_name	= #hostContactName#,
+				host_tel_no			= #hostTelNo#,
+				host_qq_no			= #hostQqNo#,
+				host_mobile_no		= #hostMobileNo#,
+				addr_id				= #addrId#,
+				addr_location_id	= #addrLocationId#,
+				addr_location_name	= #addrLocationName#,
+				addr_address		= #addrAddress#,
+				addr_contact_name	= #addrContactName#,
+				addr_tel_no			= #addrTelNo#,
+				addr_qq				= #addrQq#,
+				addr_mobile			= #addrMobile#,
+				paytype_id			= #paytypeId#,
+				paytype_name		= #paytypeName#,
+				payment_type		= #paymentType#,
+				pay_state			= #payState#,
+				weixin_yn			= #weixinYn#,
+				item_amt			= #itemAmt#,
+				freight_amt			= #freightAmt#,
+				total_amt			= #totalAmt#,
+				itemamount2			= #itemamount2#,
+				freightamount2		= #freightamount2#,
+				total2				= #total2#,
+				inputor_id			= #inputorId#,
+				inputor_name		= #inputorName#,
+				manager_id			= #managerId#,
+				manager_name		= #managerName#,
+				custtype_id			= #custtypeId#,
+				custtype_name		= #custtypeName#,
+				note				= #note#,
+				brand				= #brand#,
+				bno_user			= #bnoUser#,
+				dept_id				= #deptId#,
+				dept_no				= #deptNo#,
+				dept_name			= #deptName#,
+				store_id			= #storeId#,
+				store_name			= #storeName#,
+				store_note			= #storeNote#,
+				deskno				= #deskno#,
+				rbno_user			= #rbnoUser#,
+				itemtype			= #itemtype#,
+				itype				= #itype#,
+				host_location_name	= #hostLocationName#,
+				host_address		= #hostAddress#,
+				hosttopic			= #hosttopic#,
+				epaytype			= #epaytype#,
+				freighttype			= #freighttype#,
+				freight				= #freight#,
+				webuno				= #webuno#,
+				webstate			= #webstate#,
+				rettot				= #rettot#,
+				paytot				= #paytot#,
+				recnum				= #recnum#,
+				pricecol			= #pricecol#,
+				pricedesc			= #pricedesc#,
+				custpricemark		= #custpricemark#,
+				<isEqual prepend="" property="billType" compareValue="DT0003">
+				hbmark				= #hbmark#,
+				</isEqual>	
+				<isNotEqual prepend="" property="billType" compareValue="DT0003">
+				hbmark				= IFNULL((SELECT IFNULL(prepay_yn, 'N') FROM eos_paytype_new WHERE paytype_id = #paytypeId#), 'N'),
+				</isNotEqual>	
+				bill_proc			= #billProc#,
+				proc_man			= #procMan#,
+				info				= #info#,
+				hostcustpsql		= #hostcustpsql#,
+				webno				= #webno#,
+				webbno				= #webbno#,
+				groupmark			= #groupmark#,
+				picnum				= #picnum#,
+				tmpc1				= #tmpc1#,
+				tmpc2				= #tmpc2#,
+				tmpc3				= #tmpc3#,
+				tmpc4				= #tmpc4#,
+				tmpc5				= #tmpc5#,
+				itemmark			= #itemmark#,
+				bill_month			= #billMonth#,
+				time1				= #time1#,
+				time2				= #time2#,
+				clerkno1			= #clerkno1#,
+				clerkno2			= #clerkno2#,
+				host_eno			= #hostEno#,
+				date1				= #date1#,
+				date2				= #date2#,
+				top_num				= #topNum#,
+				nostockmark			= #nostockmark#,
+				STATE 				= #state#,
+				UPDATE_DATE 		= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				UPDATE_BY 			= #updateBy#
+		 WHERE 
+				BILL_ID = #billId#
+	</update>
+					
+	
+	<select id="getBillHeadKey" resultClass="String">
+		SELECT  get_tbl_bill_id_value(#billType#) AS idStr
+	</select>
+	
+	<insert id="insertBillHead">
+		INSERT INTO eos_bill_head_new
+		(
+			bill_id,
+			bill_type,
+			rbill_type,
+			rbill_id,
+			arrive_date,
+			cust_user_id,
+			cust_user_no,
+			cust_user_name,
+			cust_short_name,
+			cust_contact_name,
+			cust_tel_no,
+			cust_qq_no,
+			cust_mobile_no,
+			host_user_id,
+			host_user_no,
+			host_user_name,
+			host_contact_name,
+			host_tel_no,
+			host_qq_no,
+			host_mobile_no,
+			addr_id,
+			addr_location_id,
+			addr_location_name,
+			addr_address,
+			addr_contact_name,
+			addr_tel_no,
+			addr_qq,
+			addr_mobile,
+			paytype_id,
+			paytype_name,
+			payment_type,
+			pay_state,
+			weixin_yn,
+			item_amt,
+			freight_amt,
+			total_amt,
+			itemamount2,
+			freightamount2,
+			total2,
+			inputor_id,
+			inputor_name,
+			manager_id,
+			manager_name,
+			custtype_id,
+			custtype_name,
+			note,
+			brand,
+			bno_user,
+			dept_id,
+			dept_no,
+			dept_name,
+			store_id,
+			store_name,
+			store_note,
+			deskno,
+			rbno_user,
+			itemtype,
+			itype,
+			host_location_name,
+			host_address,
+			hosttopic,
+			epaytype,
+			freighttype,
+			freight,
+			webuno,
+			webstate,
+			rettot,
+			paytot,
+			recnum,
+			pricecol,
+			pricedesc,
+			custpricemark,
+			hbmark,
+			bill_proc,
+			proc_man,
+			info,
+			hostcustpsql,
+			webno,
+			webbno,
+			groupmark,
+			picnum,
+			tmpc1,
+			tmpc2,
+			tmpc3,
+			tmpc4,
+			tmpc5,
+			itemmark,
+			bill_month,
+			time1,
+			time2,
+			clerkno1,
+			clerkno2,
+			host_eno,
+			date1,
+			date2,
+			top_num,
+			nostockmark,
+			state,
+			create_date,
+			create_by,
+			update_date,
+			update_by
+		)
+		VALUES
+		(
+			#billId#,
+			#billType#,
+			#rbillType#,
+			#rbillId#,
+			#arriveDate#,
+			#custUserId#,
+			#custUserNo#,
+			#custUserName#,
+			#custShortName#,
+			#custContactName#,
+			#custTelNo#,
+			#custQqNo#,
+			#custMobileNo#,
+			#hostUserId#,
+			#hostUserNo#,
+			#hostUserName#,
+			#hostContactName#,
+			#hostTelNo#,
+			#hostQqNo#,
+			#hostMobileNo#,
+			#addrId#,
+			#addrLocationId#,
+			#addrLocationName#,
+			#addrAddress#,
+			#addrContactName#,
+			#addrTelNo#,
+			#addrQq#,
+			#addrMobile#,
+			#paytypeId#,
+			#paytypeName#,
+			#paymentType#,
+			#payState#,
+			#weixinYn#,
+			#itemAmt#,
+			#freightAmt#,
+			#totalAmt#,
+			#itemamount2#,
+			#freightamount2#,
+			#total2#,
+			#inputorId#,
+			#inputorName#,
+			#managerId#,
+			#managerName#,
+			#custtypeId#,
+			#custtypeName#,
+			#note#,
+			#brand#,
+			#bnoUser#,
+			#deptId#,
+			#deptNo#,
+			#deptName#,
+			#storeId#,
+			#storeName#,
+			#storeNote#,
+			#deskno#,
+			#rbnoUser#,
+			#itemtype#,
+			#itype#,
+			#hostLocationName#,
+			#hostAddress#,
+			#hosttopic#,
+			#epaytype#,
+			#freighttype#,
+			#freight#,
+			#webuno#,
+			#webstate#,
+			#rettot#,
+			#paytot#,
+			#recnum#,
+			#pricecol#,
+			#pricedesc#,
+			#custpricemark#,
+			<isEqual prepend="" property="billType" compareValue="DT0003">
+				#hbmark#,
+			</isEqual>	
+			<isNotEqual prepend="" property="billType" compareValue="DT0003">
+			<!-- #hbmark#, -->IFNULL((SELECT IFNULL(prepay_yn, 'N') FROM eos_paytype_new WHERE paytype_id = #paytypeId#), 'N'),
+			</isNotEqual>	
+			#billProc#,
+			#procMan#,
+			#info#,
+			#hostcustpsql#,
+			#webno#,
+			#webbno#,
+			#groupmark#,
+			#picnum#,
+			#tmpc1#,
+			#tmpc2#,
+			#tmpc3#,
+			#tmpc4#,
+			#tmpc5#,
+			#itemmark#,
+			#billMonth#,
+			#time1#,
+			#time2#,
+			#clerkno1#,
+			#clerkno2#,
+			#hostEno#,
+			#date1#,
+			#date2#,
+			#topNum#,
+			#nostockmark#,
+			#state#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#updateBy# 
+		)
+	</insert>
+	
+	<select id="getUserVendorsByBillIdList" resultClass="vendor">
+		SELECT  DISTINCT 
+				u.user_id 			as userId, 
+				u.USER_NO 			as userNo, 
+				u.USER_NAME 		as userName 
+		  FROM  eos_bill_line_new bl, 
+		  		eos_user_new u 
+		 WHERE  bl.vendor_id=u.USER_ID AND bl.bill_id = #billId#
+				<isEqual prepend="and" property="isSplitProc" compareValue="true">
+					u.user_id = #userId#
+				</isEqual>						 
+		 UNION 
+		SELECT  
+				u.user_id 			as userId, 
+				u.USER_NO 			as userNo, 
+				u.USER_NAME 		as userName  
+		  FROM  eos_user_new u WHERE u.user_id = #userId#
+	</select>
+	
+	<update id="updateBillHeadStatusByBillId">
+		UPDATE  eos_bill_head_new
+		   SET  state = #state#
+		 WHERE  bill_id = #billId#
+	</update>
+	
+	<update id="updateBillHeadPriceInfo">
+		UPDATE  eos_bill_head_new
+		   SET  itemamount2 = (SELECT SUM(tot2) FROM eos_bill_line_new WHERE bill_id = #billId#),
+		   		total2 = (SELECT SUM(tot2) FROM eos_bill_line_new WHERE bill_id = #billId#)
+		 WHERE  bill_id = #billId#
+	</update>
+	
+	<update id="updateBillHeadSomeByBillId">
+		UPDATE  eos_bill_head_new
+		   SET  proc_man = #procMan#,
+		   		bill_proc = #billProc#,
+		   		update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S')
+		   	<isNotEmpty prepend="," property="updateBy"> 
+				update_by = #updateBy#
+			</isNotEmpty>
+		 WHERE  bill_id = #billId#
+	</update>
+	
+	<delete id="deleteBillProcByBillId">
+		DELETE  FROM eos_bill_proc_new WHERE  bill_id = #billId#
+	</delete>
+	
+	<delete id="deletePendingBillProcByBillId">
+		DELETE  FROM eos_bill_proc_new WHERE state = 'PS0001' AND  bill_id = #billId#
+	</delete>
+	
+	<delete id="deleteBillHead">
+		DELETE  FROM eos_bill_head_new WHERE  bill_id = #billId#
+	</delete>
+	
+	<select id="getProcEmpListByWfId" resultClass="procEmp">
+		SELECT  ue.emp_id 			as empId,
+				ue.emp_name 		as empName
+		  FROM  eos_proc_emp_new pe,
+		  		eos_emp_new ue 
+		 WHERE  pe.emp_id = ue.emp_id AND ue.state = 'ST0001' AND pe.proc_dat_id = #procDatId#
+	</select>
+	
+	<select id="getProcGroupEmpListByWfId" resultClass="procEmp">
+		SELECT  ue.emp_id 			as empId,
+				ue.emp_name 		as empName
+		  FROM  eos_proc_group_emp_new pe,
+		  		eos_emp_new ue 
+		 WHERE  pe.emp_id = ue.emp_id AND ue.state = 'ST0001' 
+		   AND  pe.proc_dat_id = #procDatId#
+		   AND  pe.seq_no = #seqNo#
+	</select>
+	
+	<!--  Order proc group list-->
+	<select id="getProcGroupListByWfId" resultClass="procGroup">
+		SELECT  pg.proc_dat_id as procDatId,
+				pg.seq_no		as seqNo,
+				pg.condition 
+		  FROM  eos_proc_group_new pg,
+		  		eos_proc_group_cust_new pgc 
+		 WHERE  pg.proc_dat_id = pgc.proc_dat_id 
+		   AND  pg.seq_no = pgc.seq_no 
+		   AND  pg.proc_dat_id = #procDatId#
+		   AND  pgc.cust_id = #userId#
+	  ORDER BY  pg.seq_no ASC
+	</select>
+	
+	<select id="existBillHeadByCondition" resultClass="int">
+		SELECT 	1
+	  	  FROM  eos_bill_head_new
+	  	 WHERE  bill_id = #billId#
+	  	 		<isNotEmpty prepend="and" property="condition">
+	  	 		itype = #condition#
+	  	 		</isNotEmpty>
+	  	 LIMIT  1
+	</select>
+	
+	<select id="getPrePayTotalAmtList" resultClass="prePayBill">
+		SELECT  p.paytype2				AS paytype2,
+				sum(p.tot)				AS totalAmt
+		  FROM  eos_bill_head_new		b,
+				eos_paybill_detail_new 	p
+		 WHERE  b.bill_id = p.bill_id 
+		   AND  b.hbmark = 'Y'
+		   AND  p.user_id = #hostUserId#
+		   AND  p.cust_user_id = #custUserId#
+		   AND  (
+		   			( b.state = 'WS0002' ) OR
+		   			( b.state != 'WS0002' AND 
+		   				(
+		   					( b.bill_type = 'DT0004' AND b.state = 'WS0001' ) OR  
+		   					( b.bill_type = 'DT0008' AND b.state = 'WS0001' )  
+		   				)
+		   			)
+		   		)
+		   		<isNotEmpty prepend="and" property="paytypeId">
+	  	 			b.paytype_id = #paytypeId#
+	  	 		</isNotEmpty>
+		   		<isNotEmpty prepend="and" property="paytype2">
+	  	 			p.paytype2 = #paytype2#
+	  	 		</isNotEmpty>
+	  GROUP BY  p.paytype2
+	</select>
+	
+	<select id="countBillForReturnList" resultClass="Integer">
+		SELECT  count(*) cnt
+		  FROM  eos_bill_head_new h
+		 WHERE  h.state = 'WS0002'
+		   AND  (
+		   			((h.bill_type = 'DT0004' OR h.bill_type = 'DT0008') AND h.host_user_id = #userId#)
+		   		OR  (h.bill_type = 'DT0002' AND h.cust_user_id = #userId#)
+		   		)
+	   		<isNotEmpty prepend="and" property="billType"> 
+				h.bill_type = #billType#
+			</isNotEmpty>
+	   		<isNotEmpty prepend="and" property="billId"> 
+				h.bill_id LIKE CONCAT('%', #billId#, '%')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateFrom">
+				<![CDATA[h.create_date >= #createDateFrom#]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateTo">
+				<![CDATA[h.create_date <= CONCAT(#createDateTo#, " 23:59:59")]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="hostCustName">
+				((h.bill_type = 'DT0002' AND h.host_user_name LIKE CONCAT('%', #hostCustName#,'%')) 
+				OR (h.bill_type !='DT0002' AND h.cust_user_name LIKE CONCAT('%', #hostCustName#,'%') ))
+			</isNotEmpty>
+	</select>
+	
+	<select id="getBillForReturnList" resultClass="order">
+		SELECT  h.bill_id 			billId,
+				h.bill_type 		billType,
+				h.rbill_type		rbillType,
+				h.host_user_id 		hostUserId,
+				h.host_user_name 	hostUserName,
+				h.total_amt 		totalAmt,
+				h.total2 			total2,
+				h.state 			state,
+				h.paytype_id		paytypeId,
+				h.paytype_name		paytypeName,
+				h.payment_type		paymentType,
+				h.store_id			storeId,
+				h.store_name		storeName,
+				h.bill_proc			billProc,
+				h.proc_man			procMan,
+				h.bno_user			bnoUser,
+				h.cust_user_name	custUserName,
+				h.inputor_name		inputorName,
+				DATE_FORMAT(h.create_date, '%Y-%m-%d')  createDate,  
+				DATE_FORMAT(h.arrive_date, '%Y-%m-%d')  arriveDate  
+		  FROM  eos_bill_head_new h
+		 WHERE  h.state = 'WS0002'
+		   AND  (
+		   			((h.bill_type = 'DT0004' OR h.bill_type = 'DT0008') AND h.host_user_id = #userId#)
+		   		OR  (h.bill_type = 'DT0002' AND h.cust_user_id = #userId#)
+		   		)
+	   		<isNotEmpty prepend="and" property="billType"> 
+				h.bill_type = #billType#
+			</isNotEmpty>
+	   		<isNotEmpty prepend="and" property="billId"> 
+				h.bill_id LIKE CONCAT('%', #billId#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateFrom">
+				<![CDATA[h.create_date >= #createDateFrom#]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="createDateTo">
+				<![CDATA[h.create_date <= CONCAT(#createDateTo#, " 23:59:59")]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="hostCustName">
+				((h.bill_type = 'DT0002' AND h.host_user_name LIKE CONCAT('%', #hostCustName#,'%')) 
+				OR (h.bill_type !='DT0002' AND h.cust_user_name LIKE CONCAT('%', #hostCustName#,'%') ))
+			</isNotEmpty>
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+	<!-- In order view : payment detail -->
+	<select id="countPaidBillHeadList" resultClass="integer">
+		SELECT  COUNT(cnt)
+		  FROM  (
+		SELECT  count(*) as cnt
+		  FROM  eos_bill_head_new 		h,
+  				eos_paybill_detail_new 	p
+		 WHERE  h.bill_id = p.bill_id
+		   AND  h.state = 'WS0002'
+		   AND  p.state = 'WS0002'
+		   AND  p.user_id = #hostUserId#
+		   AND  p.cust_user_id = #custUserId#
+		   AND  (h.bill_type = 'DT0006'
+            OR  h.bill_type = 'DT0001'
+            OR  ( ( h.bill_type = 'DT0004' OR 
+            		h.bill_type = 'DT0008' OR 
+            		h.bill_type = 'DT0007')
+              	AND h.payment_type  <![CDATA[<>]]> '' AND h.payment_type IS NOT NULL))
+		   <isNotEmpty prepend="AND" property="paytype2">
+		   		h.pament_type = #paytype2#
+		   </isNotEmpty>
+	  GROUP BY  h.bill_id
+	  			) AS a
+	</select>
+	
+	<select id="getPaidBillHeadList" resultClass="payBillDetail">
+		SELECT  h.bill_id			 as billId,
+				h.bill_type			 as billType,
+				h.rbill_type		 as rbillType,
+				h.payment_type		 as paymentType,
+				h.total2			 as total2,
+				h.custtype_id		 as custtypeId,
+				h.bno_user			 as bnoUser,
+				h.rbno_user			 as rbnoUser,
+				DATE_FORMAT(h.create_date, '%Y-%m-%d')  createDate,  
+				GROUP_CONCAT( CONCAT(p.paytype2, " : ", CAST(p.tot AS CHAR)) SEPARATOR <![CDATA["<br>"]]>) AS paytype2
+		  FROM  eos_bill_head_new 		h,
+  				eos_paybill_detail_new 	p
+		 WHERE  h.bill_id = p.bill_id
+		   AND  h.state = 'WS0002'
+		   AND  p.state = 'WS0002'
+		   AND  h.host_user_id = #hostUserId#
+		   AND  h.cust_user_id = #custUserId#
+		   AND  (h.bill_type = 'DT0006'
+            OR  h.bill_type = 'DT0001'
+            OR  ( ( h.bill_type = 'DT0004' OR 
+            		h.bill_type = 'DT0008' OR 
+            		h.bill_type = 'DT0007')
+              	AND h.payment_type  <![CDATA[<>]]> '' AND h.payment_type IS NOT NULL))
+		   <isNotEmpty prepend="AND" property="paytype2">
+		   		h.pament_type = #paytype2#
+		   </isNotEmpty>
+	  GROUP BY  h.bill_id
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="countReceiptBillForPriceList" resultClass="Integer">
+		SELECT  count(*) cnt
+		  FROM  eos_bill_head_new h
+		 WHERE  h.state = 'WS0002'
+		   AND  h.bill_type = 'DT0002'
+		   AND	h.cust_user_id = #custUserId#
+	   		<isNotEmpty prepend="and" property="billId"> 
+				h.bill_id LIKE CONCAT('%', #billId#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="arriveDateFrom">
+				<![CDATA[h.arrive_date >= #arriveDateFrom#]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="arriveDateTo">
+				<![CDATA[h.arrive_date <= CONCAT(#arriveDateTo#, " 23:59:59")]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="vendorName">
+				h.host_user_name LIKE CONCAT('%', #vendorName#,'%')
+			</isNotEmpty>
+	</select>
+	
+	<select id="getReceiptBillForPriceList" resultClass="order">
+		SELECT  h.bill_id 			billId,
+				h.bill_type 		billType,
+				h.rbill_type		rbillType,
+				h.host_user_id 		hostUserId,
+				h.host_user_name 	hostUserName,
+				h.total_amt 		totalAmt,
+				h.total2 			total2,
+				h.state 			state,
+				h.paytype_id		paytypeId,
+				h.paytype_name		paytypeName,
+				h.payment_type		paymentType,
+				h.store_id			storeId,
+				h.store_name		storeName,
+				h.bill_proc			billProc,
+				h.proc_man			procMan,
+				h.bno_user			bnoUser,
+				h.cust_user_name	custUserName,
+				h.inputor_name		inputorName,
+				DATE_FORMAT(h.create_date, '%Y-%m-%d')  createDate,  
+				DATE_FORMAT(h.arrive_date, '%Y-%m-%d')  arriveDate
+		  FROM  eos_bill_head_new h  
+		 WHERE  h.state = 'WS0002'
+		   AND  h.bill_type = 'DT0002'
+		   AND	h.cust_user_id = #custUserId#
+	   		<isNotEmpty prepend="and" property="billId"> 
+				h.bill_id LIKE CONCAT('%', #billId#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="arriveDateFrom">
+				<![CDATA[h.arrive_date >= #arriveDateFrom#]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="arriveDateTo">
+				<![CDATA[h.arrive_date <= CONCAT(#arriveDateTo#, " 23:59:59")]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="vendorName">
+				h.host_user_name LIKE CONCAT('%', #vendorName#,'%')
+			</isNotEmpty>
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+	<update id="updateBillHeadByPrice">
+		UPDATE  eos_bill_head_new bh,
+				eos_bill_line_new bl
+		   SET  bh.total2		= (
+		   			SELECT  SUM(l.tot2)
+		   			  FROM  eos_bill_line_new l
+		   			 WHERE	l.bill_id = bh.bill_id
+		   		),
+				bh.itemamount2	= (
+					SELECT	SUM(l.tot2)
+					  FROM	eos_bill_line_new l
+					 WHERE	l.bill_id = bh.bill_id
+				),
+				bh.update_date	= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		bh.update_by 	= #updateBy#
+		 WHERE	bh.bill_id = bl.bill_id
+		   AND	bh.bill_type = 'DT0004'
+		   AND	bh.state <![CDATA[<>]]> 'WS0002'
+		   AND	bh.host_user_id = #hostUserId#
+	</update>
+	
+	<update id="updateBillHeadPriceForPayment">
+		UPDATE  eos_bill_head_new
+		   SET  total_amt 	= #totalAmt#,
+		   		total2	 	= #total2#,
+		   		update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by   = #updateBy#
+		 WHERE  bill_id = #billId#
+	</update>
+	
+	<update id="rejectBill">
+		UPDATE  eos_bill_head_new
+		   SET  state = 'WS0003'
+		 WHERE  bill_id = #billId#
+	</update>
+</sqlMap>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="itemComment">
+
+	<typeAlias alias="itemComment" type="com.kpc.eos.model.bizSetting.ItemCommentModel" />
+		
+	<select id="getUserItemCommentList" resultClass="itemComment">
+		SELECT  comment_id			AS commentId,
+				user_id				AS userId,
+				item_id				AS itemId,
+				emp_nickname		AS empNickname,
+				comment_type		AS commentType,
+				comment_content		AS commentContent,
+				emp_imgfile			AS empImgfile,
+				upper_commentid		AS upperCommentId,
+				state				AS state,
+				create_date			AS createDate,
+				create_by			AS createBy,
+				update_date			AS updateDate,
+				update_by			AS updateBy
+		  FROM  eos_comment_new 
+		 WHERE  user_id = #userId#
+		   AND  item_id = #itemId#
+		 <isNotEmpty prepend="and" property="commentType">
+			    comment_type = #commentType#
+		 </isNotEmpty>
+	</select>
+	
+</sqlMap>

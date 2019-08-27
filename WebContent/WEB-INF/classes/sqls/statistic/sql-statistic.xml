@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="statistic">
+
+	<typeAlias alias="bill" type="com.kpc.eos.model.statistic.BillSearchModel" />
+	<typeAlias alias="stockitem" type="com.kpc.eos.model.statistic.UserStockItemModel" />
+	<typeAlias alias="totalmodel" type="com.kpc.eos.model.statistic.StatisticTotalModel" />
+	<typeAlias alias="stockitemdetail" type="com.kpc.eos.model.statistic.StockItemDetailModel" />
+	<typeAlias alias="custSearch" type="com.kpc.eos.model.statistic.CustSearchModel" />
+	
+<!--  =================================== Bill Search Start============================================================-->	
+	<select id="getPrintTypeByUser" resultClass="string">
+		SELECT a.user_sys_value FROM eos_userdat_new a WHERE a.sys_code = '0404' AND a.user_id = #value#	
+	</select>
+	
+	<select id="countBillSearchList" resultClass="Integer">
+		SELECT  COUNT(*) cnt
+		  FROM  eos_bill_head_new h
+		 WHERE (host_user_id=#userId# OR cust_user_id=#userId#)
+				<isNotEmpty prepend="and" property="billType">
+					bill_type = #billType#
+				</isNotEmpty>		   
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[h.create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[h.create_date <= #createDateTo#]]>
+				</isNotEmpty>		   
+		   		<isNotEmpty prepend="and" property="billId"> 
+					h.bill_id LIKE '%$billId$%'
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="compName">
+					(cust_user_name LIKE CONCAT('%', #compName#, '%') OR host_user_name LIKE CONCAT('%', #compName#, '%'))
+				</isNotEmpty>				
+	</select>	
+	
+	<select id="getBillSearchList" resultClass="bill">
+		SELECT  h.bill_id 			billId,
+				h.bill_type 		billType,
+				h.host_user_id 		hostUserId,
+				h.host_user_name 	hostUserName,
+				h.cust_user_id		custUserId,
+				h.cust_user_name	custUserName,
+				h.total_amt 		totalAmt,
+				h.total2 			total2,
+				h.state 			state,
+				h.paytype_id		paytypeId,
+				h.paytype_name		paytypeName,
+				h.payment_type		paymentType,
+				h.pay_state			payState,
+				h.store_id			storeId,
+				h.store_name		storeName, 				
+				h.bill_proc			billProc,
+				h.proc_man			procMan,
+				h.note				note,
+				h.create_date		createDate,
+				DATE_FORMAT(arrive_date, '%Y-%m-%d')		arriveDate
+		  FROM  eos_bill_head_new h
+		 WHERE (host_user_id=#userId# OR cust_user_id=#userId#)
+				<isNotEmpty prepend="and" property="billType">
+					bill_type = #billType#
+				</isNotEmpty>		   
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[h.create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[h.create_date <= #createDateTo#]]>
+				</isNotEmpty>		   
+		   		<isNotEmpty prepend="and" property="billId"> 
+					h.bill_id LIKE '%$billId$%'
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="compName">
+					(cust_user_name LIKE CONCAT('%', #compName#, '%') OR host_user_name LIKE CONCAT('%', #compName#, '%'))
+				</isNotEmpty>				
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#
+	</select>
+	
+<!--  =================================== Bill Search END============================================================-->	
+
+<!--  =================================== Stock Search Start============================================================-->	
+	<select id="getStoreComboListByUser" resultClass="java.util.HashMap">
+		SELECT  store_id 	storeId,
+				store_name	storeName
+		  FROM eos_store_new 
+		 WHERE user_id = #value#
+		   AND state = 'ST0001'	
+	</select>
+	
+	<select id="getItemCat1FieldByUser" resultClass="string">
+		SELECT property_name propertyName FROM eos_item_desc_new WHERE property_type_cd = #propType# AND user_id = #userId# LIMIT  1
+	</select>
+	
+	<select id="getItemCategory1ListByUser" resultClass="java.util.HashMap">
+		<dynamic prepend="select">
+			<isNotEmpty property="propertyName">
+			  		IF($propertyName$ IS NULL OR $propertyName$ = '','-1', $propertyName$) itype,
+			        IF($propertyName$ IS NULL OR $propertyName$ = '', '未分类',$propertyName$) itypeName			        
+			  FROM  eos_user_item_new
+			 WHERE  user_id = #userId#
+			   AND  state = 'ST0001'
+			  GROUP BY $propertyName$			
+			</isNotEmpty>
+			<isEmpty property="propertyName">
+				"" itype, "未找到资料" itypeName
+			</isEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="countStockItemListByUser" resultClass="totalmodel">
+		SELECT  COUNT(*) totalCnt, FORMAT(ROUND(SUM(b.cost*b.qty), 2),2) totalAmt
+		  FROM  eos_user_item_new a, 
+		        eos_item_stock_new b, 
+		        eos_store_new c
+		 WHERE  a.item_id = b.item_id
+		   AND  b.store_id = c.store_id
+		   AND  a.user_id = #userId#
+		   AND  a.user_id = c.user_id
+		   
+				 <isNotEmpty prepend="and" property="searchString">
+					   a.chelp LIKE CONCAT('%', #searchString#, '%')
+				 </isNotEmpty>
+				 <isNotEmpty prepend="and" property="storeId">
+					   b.store_id = #storeId#
+				 </isNotEmpty>				 
+			     <isNotEmpty prepend="and" property="propertyFieldValue">
+			     	<isEqual  prepend="" property="propertyFieldValue" compareValue="-1">
+			     		(a.$propertyField$ is NULL OR a.$propertyField$ = '')
+			     	</isEqual>
+			     	<isNotEqual  prepend="" property="propertyFieldValue" compareValue="-1">
+			     		 a.$propertyField$ = #propertyFieldValue#
+			     	</isNotEqual>			     	
+				 </isNotEmpty>			
+	</select>		
+	
+	<select id="getStockItemListByUser" resultClass="stockitem">
+		SELECT  a.item_id					AS		itemId,
+		        a.brand						AS		brand,
+			    a.unit						AS		unit,
+			    a.c1						AS 		c1,
+			    a.c2						AS 		c2,
+			    a.c3						AS 		c3,
+			    a.c4						AS 		c4,
+			    a.c5						AS 		c5,
+			    a.c6						AS 		c6,
+			    a.c7						AS 		c7,
+			    a.c8						AS 		c8,
+			    a.c9						AS 		c9,
+			    a.c10						AS 		c10,
+			    a.c11						AS 		c11,
+			    a.c12						AS 		c12,
+			    a.c13						AS 		c13,
+			    a.c14						AS 		c14,
+			    a.stock_mark				AS		stockMark,
+			    a.state						AS		state,
+			    a.item_img_path				AS 		itemImgPath,
+				a.price_in					AS 		priceIn,
+		        b.cost						AS 		stockCost,
+		        b.qty						AS 		stockQty,
+		        b.cost*b.qty 				AS 		stockTot,
+		        c.dept_id					AS 		deptId,
+		        (SELECT dept_name FROM eos_dept_new WHERE dept_id = c.dept_id) deptName,
+		        c.store_name				AS 		storeName,
+		        c.store_id					AS 		storeId,
+				(SELECT user_name FROM eos_user_new WHERE user_id = a.last_vendor_id) lastVendorName		
+		  FROM  eos_user_item_new a, 
+		        eos_item_stock_new b, 
+		        eos_store_new c
+		 WHERE  a.item_id = b.item_id
+		   AND  b.store_id = c.store_id
+		   AND  a.user_id = #userId#
+		   AND  a.user_id = c.user_id
+		   
+				 <isNotEmpty prepend="and" property="searchString">
+					   a.chelp LIKE CONCAT('%', #searchString#, '%')
+				 </isNotEmpty>
+				 <isNotEmpty prepend="and" property="storeId">
+					   b.store_id = #storeId#
+				 </isNotEmpty>				 
+			     <isNotEmpty prepend="and" property="propertyFieldValue">
+			     	<isEqual  prepend="" property="propertyFieldValue" compareValue="-1">
+			     		(a.$propertyField$ is NULL OR a.$propertyField$ = '')
+			     	</isEqual>
+			     	<isNotEqual  prepend="" property="propertyFieldValue" compareValue="-1">
+			     		 a.$propertyField$ = #propertyFieldValue#
+			     	</isNotEqual>			     	
+				 </isNotEmpty>		
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#				 
+	</select>
+	
+	<!-- ====================Stock Search Detail Start====================================== -->
+	<select id="countStockDetailSearchList" resultClass="Integer">
+		SELECT  COUNT(*) cnt
+		  FROM  eos_bill_head_new bh,
+		        eos_bill_line_new bl
+		 WHERE  bh.bill_id = bl.bill_id
+		   AND  bl.item_id = #itemId#
+		   AND  bh.state = 'WS0002'
+		   AND  (bh.store_id = #storeId# OR bl.store_id = #storeId#)
+		   AND  (bh.cust_user_id = #userId# OR bh.host_user_id = #userId#)	
+				<isNotEmpty prepend="and" property="billType">
+					bh.bill_type = #billType#
+				</isNotEmpty>		   
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[bl.create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[bl.create_date <= #createDateTo#]]>
+				</isNotEmpty>		   
+		   		<isNotEmpty prepend="and" property="billId"> 
+					bh.bill_id LIKE '%$billId$%'
+				</isNotEmpty>					   
+	</select>
+		
+	<select id="getStockDetailSearchList" resultClass="stockitemdetail">
+		SELECT  bl.bill_id									billId,
+				DATE_FORMAT(bl.create_date, '%Y-%m-%d')		createDate,
+				bh.bill_type								billType,
+				bh.host_user_name							hostUserName,
+				bh.cust_user_name							custUserName,
+				bl.price2									price2,
+				bl.qty2										qty2,
+				bl.tot2										tot2,
+				bh.state									state
+		  FROM  eos_bill_head_new bh,
+		        eos_bill_line_new bl
+		 WHERE  bh.bill_id = bl.bill_id
+		   AND  bl.item_id = #itemId#
+		   AND  bh.state = 'WS0002'
+		   AND  (bh.store_id = #storeId# OR bl.store_id = #storeId#)
+		   AND  (bh.cust_user_id = #userId# OR bh.host_user_id = #userId#)	
+				<isNotEmpty prepend="and" property="billType">
+					bh.bill_type = #billType#
+				</isNotEmpty>		   
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[bl.create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[bl.create_date <= #createDateTo#]]>
+				</isNotEmpty>		   
+		   		<isNotEmpty prepend="and" property="billId"> 
+					bh.bill_id LIKE '%$billId$%'
+				</isNotEmpty>		
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#		   
+	</select>
+	
+<!--  =================================== Stock Search END============================================================-->	
+
+<!--  =================================== Cust INFo Search Start============================================================-->
+
+	<select id="countCustInfoSearchList" resultClass="Integer">
+		SELECT  COUNT(*) cnt
+		  FROM  eos_hostcust_new hc,
+		        eos_user_new u
+		 WHERE  hc.cust_id = u.user_id
+		   AND  hc.host_id = #userId#
+			<isNotEmpty property="custTypeId" prepend="AND">
+				hc.custtype_id = #custTypeId#
+			</isNotEmpty>
+			<isNotEmpty property="chelp" prepend="AND">
+				u.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	</select>
+
+	<select id="getCustInfoSearchList" resultClass="custSearch">
+		SELECT  u.user_name 		custUserName,
+				CONCAT(get_location_name(u.location_id), IFNULL(u.address,'')) address,
+				u.contact_name 		contactName,
+				u.tel_no 			telNo,
+				u.note 				note,
+				hc.custtype_id		custTypeId,
+				(SELECT custtype_name FROM eos_custtype_new WHERE custtype_id = hc.custtype_id) custTypeName,
+				DATE_FORMAT(u.create_date, '%Y-%m-%d')		createDate
+		  FROM  eos_hostcust_new hc,
+		        eos_user_new u
+		 WHERE  hc.cust_id = u.user_id
+		   AND  hc.host_id = #userId#
+			<isNotEmpty property="custTypeId" prepend="AND">
+				hc.custtype_id = #custTypeId#
+			</isNotEmpty>
+			<isNotEmpty property="chelp" prepend="AND">
+				u.chelp LIKE CONCAT('%', #chelp#, '%')
+			</isNotEmpty>
+	  ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#		   
+	</select>
+
+<!--  =================================== Cust INFo Search END============================================================-->
+
+<!--  =================================== Sale Cust Statistic Start============================================================-->
+
+	<select id="countSaleCustStatisticList" resultClass="Integer">
+		SELECT COUNT(*) cnt
+		  FROM    
+			   (SELECT  1
+				  FROM  eos_bill_head_new a
+				 WHERE  host_user_id = #userId#
+				   AND  (bill_type = 'DT0004' OR bill_type = 'DT0008')
+				   AND  state = 'WS0002'
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[create_date <= #createDateTo#]]>
+				</isNotEmpty>		   
+		   		<isNotEmpty prepend="and" property="compName"> 
+					cust_user_name LIKE CONCAT('%', #compName#, '%')
+				</isNotEmpty>		
+				 GROUP BY cust_user_id) a					
+	</select>
+
+	<select id="getSaleCustStatisticList" resultClass="bill">
+		SELECT  (SELECT user_name FROM eos_user_new WHERE user_id = a.custUserId) custUserName,   
+		        a.*
+		  FROM    
+			   (SELECT  cust_user_id		custUserId,
+						SUM(total2)			total2,
+						COUNT(cust_user_id) topNum
+				  FROM  eos_bill_head_new a
+				 WHERE  host_user_id = #userId#
+				   AND  (bill_type = 'DT0004' OR bill_type = 'DT0008')
+				   AND  state = 'WS0002'
+				<isNotEmpty prepend="and" property="createDateFrom">
+					<![CDATA[create_date >= #createDateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="createDateTo">
+					<![CDATA[create_date <= #createDateTo#]]>
+				</isNotEmpty>		   
+		   		<isNotEmpty prepend="and" property="compName"> 
+					cust_user_name LIKE CONCAT('%', #compName#, '%')
+				</isNotEmpty>		
+				 GROUP BY cust_user_id) a					
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#		   
+	</select>
+
+<!-- Sale Customer Statisitc By day -->
+	<select id="countSaleCustStatisticByDayList" resultClass="Integer">
+		SELECT  COUNT(*) cnt
+		  FROM  eos_bill_head_new a
+		 WHERE  a.host_user_id = #userId#
+		   AND  a.cust_user_id = #searchString1#
+		   AND  (a.bill_type = 'DT0004' OR a.bill_type = 'DT0008')
+		   AND  a.state = 'WS0002'	
+				<isNotEmpty prepend="and" property="dateFrom">
+					<![CDATA[create_date >= #dateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="dateTo">
+					<![CDATA[create_date <= #dateTo#]]>
+				</isNotEmpty>		
+				<isNotEmpty prepend="and" property="searchString3">
+					a.bill_id LIKE CONCAT('%', #searchString3#, '%')
+				</isNotEmpty>						 
+	</select>
+
+	<select id="getSaleCustStatisticByDayList" resultClass="bill">
+		SELECT  a.cust_user_name							custUserName,
+				DATE_FORMAT(a.create_date, '%Y-%m-%d')		createDate,
+				a.bill_type									billType,
+				a.bill_id									billId,
+				a.total2									total2		
+		  FROM  eos_bill_head_new a
+		 WHERE  a.host_user_id = #userId#
+		   AND  a.cust_user_id = #searchString1#
+		   AND  (a.bill_type = 'DT0004' OR a.bill_type = 'DT0008')
+		   AND  a.state = 'WS0002'	
+				<isNotEmpty prepend="and" property="dateFrom">
+					<![CDATA[create_date >= #dateFrom#]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="dateTo">
+					<![CDATA[create_date <= #dateTo#]]>
+				</isNotEmpty>			 
+				<isNotEmpty prepend="and" property="searchString3">
+					a.bill_id LIKE CONCAT('%', #searchString3#, '%')
+				</isNotEmpty>					
+	  ORDER BY 	$page.sidx$ $page.sord$
+		 LIMIT  #page.startRow#, #page.rows#					  
+	</select>
+<!--  =================================== Sale Cust Statistic End============================================================-->
+
+</sqlMap>

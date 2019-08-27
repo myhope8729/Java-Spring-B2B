@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="configPage">
+
+	<typeAlias alias="configPageBannerModel" type="com.kpc.eos.model.bizSetting.ConfigPageBannerModel" />
+	<typeAlias alias="configPageDetailModel" type="com.kpc.eos.model.bizSetting.ConfigPageDetailModel" />
+		
+	<resultMap id="bannerResult" class="configPageBannerModel">
+		<result property="bannerId" column="BANNER_ID" />
+		<result property="userId" column="USER_ID" />
+		<result property="urlType" column="URL_TYPE" />
+		<result property="url" column="URL" />
+		<result property="showMark" column="SHOWMARK" />
+		<result property="bannerImgPath" column="BANNER_IMG_PATH" />		
+	</resultMap>
+	
+	<resultMap id="detailResult" class="configPageDetailModel">
+		<result property="detailId" column="DETAIL_ID" />
+		<result property="userId" column="USER_ID" />
+		<result property="rowNum" column="ROW_NUM" />
+		<result property="colNum" column="COL_NUM" />
+		<result property="cellNum" column="CELL_NUM" />		
+		<result property="detailType" column="DETAIL_TYPE" />
+		<result property="urlType" column="URL_TYPE" />
+		<result property="url" column="URL" />
+		<result property="widthPc" column="WIDTH_PC" />
+		<result property="widthMob" column="WIDTH_MOB" />		
+		<result property="bdColor" column="BD_COLOR" />
+		<result property="mobMark" column="MOB_MARK" />
+		<result property="picNote" column="PIC_NOTE" />
+		<result property="picSize" column="PIC_SIZE" />
+		<result property="picBdColor" column="PIC_BD_COLOR" />		
+		<result property="fontNote" column="FONT_NOTE" />
+		<result property="fontSize" column="FONT_SIZE" />
+		<result property="fontColor" column="FONT_COLOR" />
+		<result property="bgColor" column="BG_COLOR" />
+		<result property="liMark" column="LI_MARK" />		
+		<result property="mobOnly" column="MOB_ONLY" />
+		<result property="infoType" column="INFO_TYPE" />
+		<result property="titleFontColor" column="TITLE_FONT_COLOR" />
+		<result property="titleFontSize" column="TITLE_FONT_SIZE" />
+		<result property="titleFontBgColor" column="TITLE_FONT_BG_COLOR" />
+		<result property="infoRecNum" column="INFO_REC_NUM" />
+		<result property="detailImgPath" column="DETAIL_IMG_PATH" />		
+		<result property="createDate" column="CREATE_DATE" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="updateDate" column="UPDATE_DATE" />
+		<result property="updateBy" column="UPDATE_BY" />
+	</resultMap>
+
+	<update id="updateUserPage">
+		UPDATE	EOS_USER_NEW
+		SET 	LOGO_IMG_PATH = #logoImgPath#,
+				TOPIC1 = #topic1#,
+				TOPIC2 = #topic2#,
+				MAIN_COLOR = #mainColor#,
+				BK_COLOR = #bkColor#,				
+				UPDATE_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				UPDATE_BY = #empId#
+		WHERE	USER_ID = #userId#
+	</update>
+	
+	
+	<insert id="insertPageBanner">
+		INSERT INTO EOS_PAGE_BANNER_NEW (BANNER_ID, USER_ID) 
+			(SELECT 
+				CONCAT('PGBN', LPAD(CONV(IFNULL(SUBSTRING(MAX(t.BANNER_ID), -11), 0), 10, 10) + 1, 11, '0')),
+				#userId#
+			FROM EOS_PAGE_BANNER_NEW t ORDER BY t.BANNER_ID DESC LIMIT 1)
+	</insert>
+	
+	<select id="getPageBannerByUser" resultMap="bannerResult">
+		SELECT	*
+		FROM	EOS_PAGE_BANNER_NEW
+		WHERE	USER_ID = #userId#
+		  AND 	banner_img_path IS NOT NULL
+		  AND	banner_img_path <![CDATA[<>]]> '' 
+		ORDER BY BANNER_ID
+	</select>
+	
+	<select id="getAllPageBannerByUser" resultMap="bannerResult">
+		SELECT	*
+		FROM	EOS_PAGE_BANNER_NEW
+		WHERE	USER_ID = #userId#
+		ORDER BY BANNER_ID
+	</select>	        
+	
+	<select id="getPageBannerById" resultMap="bannerResult">
+		SELECT	*
+		FROM	EOS_PAGE_BANNER_NEW
+		WHERE	BANNER_ID = #bannerId#
+	</select>
+	
+	<update id="updatePageBanner">
+		UPDATE	EOS_PAGE_BANNER_NEW
+		SET 	URL_TYPE		= #urlType#,
+		   		URL				= #url#,
+		   		SHOWMARK 		= #showMark#,
+		   		BANNER_IMG_PATH = #bannerImgPath#
+		WHERE	BANNER_ID = #bannerId#
+	</update>
+	
+	
+	<insert id="insertPageDetail">
+		INSERT INTO EOS_PAGE_DETAIL_NEW 
+			(
+				DETAIL_ID, 
+				USER_ID, 
+				ROW_NUM, 
+				COL_NUM, 
+				CELL_NUM, 
+			<isNotEmpty prepend="" property="widthPc">
+				WIDTH_PC,
+			</isNotEmpty>
+			<isNotEmpty prepend="" property="widthMob">
+				WIDTH_MOB,
+			</isNotEmpty>
+				CREATE_DATE, 
+				CREATE_BY, 
+				UPDATE_DATE, 
+				UPDATE_BY
+			) 
+			 VALUES (
+			 	#detailId#, 
+			 	#userId#, 
+			 	#rowNum#, 
+			 	#colNum#, 
+			 	#cellNum#,
+			<isNotEmpty prepend="" property="widthPc">
+				#widthPc#,
+			</isNotEmpty>
+			<isNotEmpty prepend="" property="widthMob">
+				#widthMob#,
+			</isNotEmpty> 
+				CONVERT(DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), CHAR), 
+				#createBy#, 
+				CONVERT(DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), CHAR), 
+				#updateBy#)				
+	</insert>
+	
+	<select id="getPageDetailByUser" resultMap="detailResult">
+		SELECT		a.*
+		  FROM		eos_page_detail_new a,
+			(SELECT COUNT(*) AS cnt, row_num
+			   FROM eos_page_detail_new
+			  WHERE user_id = #userId#
+			    AND detail_type <![CDATA[<>]]> 'PI0001'
+			  GROUP BY row_num) b
+		WHERE		a.user_id = #userId#
+		  AND		a.row_num = b.row_num
+		ORDER BY 	a.user_id, a.row_num, a.col_num, a.cell_num
+	</select>
+	
+	<select id="getAllPageDetailByUser" resultMap="detailResult">
+		SELECT		*
+		  FROM		eos_page_detail_new
+		 WHERE		user_id = #userId#
+		 ORDER BY 	user_id, row_num, col_num, cell_num
+	</select>
+	
+	<select id="getPageDetailById" resultMap="detailResult">
+		SELECT		*	
+		  FROM		EOS_PAGE_DETAIL_NEW
+		 WHERE		DETAIL_ID = #detailId#
+	</select>
+	
+	<update id="updatePageDetail">
+		UPDATE	EOS_PAGE_DETAIL_NEW
+		   SET 	USER_ID 			= #userId#,
+				ROW_NUM 			= #rowNum#,
+				COL_NUM 			= #colNum#,
+				CELL_NUM 			= #cellNum#,
+				DETAIL_TYPE 		= #detailType#,
+				URL_TYPE 			= #urlType#,
+				URL 				= #url#,
+				BD_COLOR 			= #bdColor#,
+				MOB_MARK 			= #mobMark#,
+				PIC_NOTE 			= #picNote#,
+				PIC_SIZE 			= #picSize#,
+				PIC_BD_COLOR 		= #picBdColor#,
+				FONT_NOTE 			= #fontNote#,
+				FONT_SIZE 			= #fontSize#,
+				FONT_COLOR 			= #fontColor#,
+				BG_COLOR 			= #bgColor#,
+				LI_MARK 			= #liMark#,
+				MOB_ONLY 			= #mobOnly#,
+				INFO_TYPE 			= #infoType#,
+				TITLE_FONT_COLOR	= #titleFontColor#,
+				TITLE_FONT_SIZE		= #titleFontSize#,
+				TITLE_FONT_BG_COLOR	= #titleFontBgColor#,
+				INFO_REC_NUM		= #infoRecNum#,
+				DETAIL_IMG_PATH 	= #detailImgPath#,
+				UPDATE_DATE 		= CONVERT(DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), CHAR),
+				UPDATE_BY			= #updateBy#
+		WHERE	DETAIL_ID = #detailId#
+	</update>
+	
+	<delete id="deletePageDetail">
+		DELETE  
+		  FROM  eos_page_detail_new 
+		 WHERE  user_id = #userId#
+	  		<isNotEmpty prepend="and" property="rowId"> 
+				row_num = #rowId#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="colId"> 
+				col_num = #colId#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="cellId"> 
+				cell_num = #cellId#
+			</isNotEmpty>
+	</delete>
+	
+	<update id="updatePageDetailWidth">
+		UPDATE	eos_page_detail_new
+		SET  	
+			<isNotEmpty prepend="" property="widthPc">
+				width_pc 			= #widthPc#,
+			</isNotEmpty>
+			<isNotEmpty prepend="" property="widthMob">
+				width_mob 			= #widthMob#,
+			</isNotEmpty>
+				update_date 		= CONVERT(DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), CHAR),
+				update_by			= #updateBy#
+		WHERE	user_id = #userId#
+		  AND	row_num = #rowNum#
+		  AND	col_num = #colNum#
+	</update>
+	
+</sqlMap>

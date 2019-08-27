@@ -1,0 +1,73 @@
+﻿@charset "utf-8";
+
+/* added 20180113 */
+body { font-family:微软雅黑 !important; margin:0; padding:0; }
+a { cursor: pointer; }
+
+.line-150 { line-height:150%; }
+.line-200 { line-height:200%; }
+
+.font-24 { font-size:24px !important; }
+.font-18 { font-size:18px !important; }
+.font-16 { font-size:16px !important; }
+.font-14 { font-size:14px !important; }
+.font-12 { font-size:12px !important; }
+.font-10 { font-size:10px !important; }
+
+.color-white { color:#FFFFFF !important; }
+.color-red { color:#FF0000 !important; }
+.color-yellow { color:#FFA51E !important; }
+.color-dark { color:#CCCCCC !important; }
+.color-grey { color:#E0E0E0 !important; }
+.color-blank { color:#000000 !important; }
+
+.bg-green { background-color:#CCFF66 !important; }
+.bg-yellow { background-color:#FFCC66 !important; }
+.bg-white { background-color:#FFFFFF !important; }
+.bg-red { background-color:#FF0000 !important; }
+.bg-dark { background-color:#F1F1F1 !important; }
+.bg-grey { background-color:#E0E0E0 !important; }
+
+.block-table { display:table !important; width:100% !important; }
+.block-cell { display:table-cell !important; }
+.block-col { float:left;}
+.block-auto { margin:0 auto;}
+.block-middle { vertical-align:middle; }
+
+.border-white { border:1px solid #FFFFFF !important; }
+.border-grey { border:1px solid #E0E0E0 !important; }
+.border-none { border:none; }
+.border-bottom-grey { border-bottom:1px solid #E0E0E0 !important; } 
+.border-bottom-none { border-bottom:none !important; }
+
+.pd-none { padding:0 !important; }
+.pd5 { padding:5px; }
+.pd10 { padding:10px; }
+.pd15 { padding:15px; }
+.pd20 { padding:20px; }
+.pdl10 { padding-left:10px; }
+.pdt10 { padding-top:10px; }
+.pdt15 { padding-top:15px; }
+.pdt20 { padding-top:20px; }
+.pdt40 { padding-top:40px; }
+.pdb15 { padding-bottom:15px; }
+.pdb20 { padding-bottom:20px; }
+
+.mg-none { margin:0 !important; }
+
+/* Slider Custom Style */
+.carousel .item img { width:100% !important; height: 400px !important; }
+
+/* Comment */
+.doc-ol { font-family: 微软雅黑 }
+.doc-li { margin:0px; padding:0px; list-style:none; line-height:30px; }
+
+/* Product Category */
+.item-category2 { width:25%; }
+.item-type1 { cursor:pointer; }
+.item-type2 { height:25px; padding-top:5px; padding-left:10px; cursor:pointer; }
+.item-caption { width:70%; overflow:hidden; }
+
+/* Check Bill */
+.checkbill-btn { width:250px; border:2px; border-radius:4px; cursor: pointer; }
+.bill-btn { width:150px; border:2px; border-radius:4px; cursor: pointer; } 

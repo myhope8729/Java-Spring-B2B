@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="custType">
+
+	<typeAlias alias="custType" type="com.kpc.eos.model.bizSetting.CustTypeModel" />
+	
+	<select id="getCustTypeList" resultClass="custType">
+		SELECT 	custtype_id							AS custTypeId,
+				custtype_name						AS custTypeName,
+				note								AS note,
+				state								AS state
+		 FROM  eos_custtype_new
+		WHERE  user_id = #userId#
+	 ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalCountCustTypeList" resultClass="integer">
+		SELECT  COUNT(*) AS cnt
+		  FROM  eos_custtype_new
+		 WHERE  user_id = #userId#
+	</select>
+	
+	<select id="findCustTypeListByUser" resultClass="custType">
+		SELECT  custtype_id							AS custTypeId,
+				custtype_name						AS custTypeName
+		  FROM  eos_custtype_new
+		 WHERE  user_id = #userId#
+		   AND  state = 'ST0001'
+	</select>
+	
+	<select id="getCustType" resultClass="custType">
+		SELECT  custtype_id							AS custTypeId,
+				user_id								AS userId,
+				custtype_name						AS custTypeName,
+				note								AS note,
+				state								AS state
+		  FROM  eos_custtype_new
+		 WHERE  custtype_id  = #custTypeId#
+	</select>
+	
+	<update id="updateCustType">
+		UPDATE  eos_custtype_new
+		   SET  custtype_name 		= #custTypeName#,
+		   		note				= #note#,
+		   		state				= #state#,
+		   		update_date			= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by			= #updateBy#
+		 WHERE  custtype_id			= #custTypeId#
+		   AND  user_id				= #userId#
+	</update>
+	
+	<insert id="insertCustType">
+		INSERT INTO  eos_custtype_new
+				(
+					 	custtype_id,
+					 	user_id,				custtype_name,	 			note,				state,
+					 	create_date,		 	create_by,					update_date,		update_by
+				)
+			 VALUES  
+			 	(
+			 			get_tbl_next_id_value('eos_custtype_new'),
+			 			#userId#,				#custTypeName#,				#note#,				#state#,
+			 			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,
+			 			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#
+			 	)
+	</insert>
+	
+	<select id="checkExistCustTypeName" resultClass="Integer">
+		SELECT  DISTINCT 1
+		  FROM  eos_custtype_new
+		 WHERE  user_id = #userId#
+		   AND  custtype_name = #custTypeName#
+		<isNotEmpty property="custTypeId" prepend="AND">
+	   			custtype_id NOT IN (SELECT custtype_id FROM eos_custtype_new WHERE custtype_id = #custTypeId#)
+		</isNotEmpty>
+	</select>
+</sqlMap>

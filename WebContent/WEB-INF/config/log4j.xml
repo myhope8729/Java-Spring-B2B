@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="EUC-KR"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="true">
+	<!-- Level can be  ALL, DEBUG, INFO, WARN, ERROR, FATAL, OFF -->
+	<!--
+		Pattern to output
+			%d : date
+			%p : priority (level)
+			%c : category (where the log is from)
+			%m : message
+			%n : line_separator
+	 -->
+
+	<!-- appender for console -->
+	<appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="DEBUG"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<!--
+			<param name="ConversionPattern" value="%d %p [%C.%M()]%n%m%n"/>
+			<param name="ConversionPattern" value="[%d] %p [%C.%M()] %m%n"/>
+			-->
+			<param name="ConversionPattern" value="%p [%C.%M():%L] %m%n"/>
+		</layout>
+	</appender>
+
+	<!-- appender for console -->
+	<appender name="TRALOG" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="Threshold" value="TRACE"/>
+		<param name="file" value="..\..\logs\EOS.log"/>
+		<param name="datePattern" value="'.'yyyy-MM-dd"/>
+		<param name="append" value="true"/>
+		<param name="separate" value="true"/>
+		<layout class="org.apache.log4j.PatternLayout">
+<!--			<param name="ConversionPattern" value="%d{yyyyMMddHHmmss} %p %m%n"/>-->
+			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] [%l] %3x - %m%n"/>
+		</layout>
+	</appender>
+
+	<!-- Spring Framework logger -->
+	<category name="org.springframework">
+		<priority value="WARN" />
+	</category>
+	<category name="org.springframework.web.servlet.view.json">
+		<priority value="DEBUG" />
+	</category>
+
+	<!-- Jakarta Commons logger -->
+	<category name="org.apache">
+		<priority value="WARN" />
+	</category>
+
+	<!-- SQL logger -->
+    <category name="com.ibatis">
+		<priority value="WARN" />
+	</category>
+	<category name="java.sql.Connection">
+	    <priority value="DEBUG" />
+	</category>
+	<category name="java.sql.Statement">
+	    <priority value="DEBUG" />
+	</category>
+	<category name="java.sql.PreparedStatement">
+	    <priority value="DEBUG" />
+	</category>
+	<category name="java.sql.ResultSet">
+	    <priority value="DEBUG" />
+	</category>
+
+    <category name="com.kpc.eos.controller" />
+
+	<!-- root logger -->
+	<root>
+		<priority value ="DEBUG" />
+		<appender-ref ref="TRALOG" />
+		<appender-ref ref="STDOUT" />
+		</root>
+
+</log4j:configuration>

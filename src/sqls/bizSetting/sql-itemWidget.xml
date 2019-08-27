@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="itemWidget">
+
+	<typeAlias alias="itemWidget" type="com.kpc.eos.model.bizSetting.ItemWidgetModel" />
+		
+	<select id="getUserItemWidgetList" resultClass="itemWidget">
+		SELECT  a.user_id			AS userId,
+				a.item_id			AS itemId,
+				a.line_no			AS lineNo,
+				a.col_no			AS colNo,
+				a.widget_type		AS widgetType,
+				a.widget_content	AS widgetContent,
+				a.link_url		AS linkUrl,
+				a.state			AS state,
+			   (SELECT  count(*) 
+			      FROM  eos_item_widget_new 
+			     WHERE  user_id = #userId#
+			       AND  item_id = #itemId#
+			       AND  line_no = a.line_no
+				 <isNotEmpty prepend="and" property="state">
+					    state = #state#
+				 </isNotEmpty>
+			     ) 	AS colCount
+		  FROM  eos_item_widget_new a
+		 WHERE  a.user_id = #userId#
+		   AND  a.item_id = #itemId#
+		 <isNotEmpty prepend="and" property="widgetType">
+			    a.widget_type = #widgetType#
+		 </isNotEmpty>
+		 <isEmpty prepend="and" property="widgetType">
+			    a.widget_type <![CDATA[ <> ]]> 'WT0001'
+		 </isEmpty>
+		 <isNotEmpty prepend="and" property="lineNo">
+		 		a.line_no = #lineNo#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="colNo">
+			    a.col_no = #colNo#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="state">
+			    a.state = #state#
+		 </isNotEmpty>
+	</select>
+	
+	<select id="getDeleteImageList" resultClass="String">
+		SELECT  widget_content	AS widgetContent
+		  FROM  eos_item_widget_new
+		 WHERE  user_id = #userId#
+		   AND  item_id = #itemId#
+		   AND  widget_type <![CDATA[ <> ]]> 'WT0002'
+		 <isNotEmpty prepend="and" property="imgNames">
+			    widget_content NOT IN <iterate property="imgNames" open="(" close=")" conjunction=",">#imgNames[]#</iterate>
+		 </isNotEmpty>  
+	</select>
+	
+	<delete id="deleteItemWidget">
+		DELETE FROM eos_item_widget_new
+		 WHERE user_id = #userId#
+		   AND item_id = #itemId#
+	</delete>
+	
+	<insert id="insertItemWidget">
+		INSERT INTO eos_item_widget_new
+		  (		user_id, item_id, line_no, col_no, widget_type, widget_content, link_url, state		)
+		  VALUES
+		  (		#userId#, #itemId#, #lineNo#, #colNo#, #widgetType#, #widgetContent#, #linkUrl#, #state# 	  )
+	</insert>
+	
+</sqlMap>

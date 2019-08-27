@@ -1,0 +1,131 @@
+<%@page import="com.kpc.eos.core.Constants"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<meta http-equiv="Content-Type" 	content="text/html; charset=UTF-8">
+<meta http-equiv="Cache-Control" 	content="No-Cache" />
+<meta http-equiv="Pragma" 			content="No-Cache" />
+<meta http-equiv="Expires" 			content="now" />
+<meta http-equiv="X-UA-Compatible" 	content="IE=edge" />
+<meta name="keywords" 				content="sunpoto" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+
+<link rel="shortcut icon" href="<c:url value="/images/favicon.ico"/>" />
+
+<link href="<c:url value="/js/lib/jquery/themes/base/jquery-ui-1.8.5.custom.css"/>" rel="stylesheet" type="text/css" />
+<link href="<c:url value="/css/plugins/jqGrid/ui.jqgrid-bootstrap.css"/>" rel="stylesheet" type="text/css" />
+<%--<link href="<c:url value="/js/lib/jquery/loadmask/jquery.loadmask.css"/>" rel="stylesheet" type="text/css" />
+--%>
+<link href="<c:url value="/js/lib/jquery/timeentry/jquery.timeentry.css"/>" rel="stylesheet" type="text/css" />
+<link href="/js/lib/plugins/jstree/themes/default/style.min.css" rel="stylesheet" type="text/css"/>
+<%-- 
+<link href="/css/plugins/jstree/jstree.css"      rel="stylesheet" type="text/css"/>
+<link href="/css/plugins/select2/select2.css"      rel="stylesheet" type="text/css"/>
+--%> 
+<link href="<c:url value="/css/plugins/fancybox/jquery.fancybox.css"/>" rel="stylesheet" type="text/css" />
+<link href="<c:url value="/css/bootstrap.min.css"/>" rel="stylesheet" type="text/css" />
+<link href="<c:url value="/css/bootstrap-fileinput.css"/>" rel="stylesheet" type="text/css" />
+<link href="<c:url value="/css/font-awesome.min.css"/>" rel="stylesheet" type="text/css" />
+
+<link href="<c:url value="/js/lib/plugins/bootstrap-toastr/toastr.min.css"/>" rel="stylesheet" type="text/css" />
+
+<link href="<c:url value="/js/lib/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css"/>" rel="stylesheet" type="text/css" />
+<link href="<c:url value="/js/lib/plugins/bootstrap-daterangepicker/daterangepicker-bs3.css"/>" rel="stylesheet" type="text/css" />
+<link href="<c:url value="/css/plugins/jcrop/jquery.Jcrop.css"/>" rel="stylesheet" type="text/css" />
+
+<LINK href="<c:url value="/css/common.css"/>" rel="stylesheet" type="text/css">
+<LINK href="<c:url value="/css/common2.css"/>" rel="stylesheet"	type="text/css">
+
+<style>
+.gridLink a{ color:blue; font-weight:bold; cursor: pointer;}
+
+/* DatePicker */
+.ui-datepicker-trigger {vertical-align: bottom;}
+#ui-datepicker-div {display:none;}
+
+</style>
+<script type="text/javascript">
+var _contextPath    = "<%= request.getContextPath() %>";
+var _milliseconds	= <%= (Long) request.getAttribute("SYSTEM_MILLISECONDS") %>;
+var imageServerUrl = "<%= Constants.IMAGE_SERVER_URL %>";
+
+</script>
+<LINK href="<c:url value="/css/admin_BO.css"/>" rel="stylesheet"	type="text/css">
+
+<!--[if lt IE 9]>
+<%-- <script type="text/javascript" src="<c:url value="/js/lib/html5shiv.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/respond.min.js"/>"></script> --%>
+<LINK href="<c:url value="/css/style_ie.css"/>" rel="stylesheet"	type="text/css">
+<![endif]-->
+
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery-1.11.2.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery.json-2.2.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/ui/jquery-ui-1.10.4.custom.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery.fancybox.pack.js"/>"></script>
+<!-- time entry js -->
+<script type="text/javascript" src="<c:url value="/js/common/common.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/backoffice/boCommon.js"/>"></script>
+<%-- validation js --%>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/jquery.validate.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/jquery.metadata.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/messages_zh.js"/>"></script>
+<!-- grid js -->
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jqGrid/i18n/grid.locale-cn.js"/>"></script>
+
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jqGrid/jquery.jqGrid.js"/>"></script>
+<%-- <script type="text/javascript" src="<c:url value="/js/lib/jquery/jqGrid/jquery.jqGrid.min.js"/>"></script> --%>
+
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jqGrid/plugins/jquery.tablednd.js"/>"></script>
+<!-- script type="text/javascript" src="<c:url value="/js/lib/jquery/jqGrid/plugins/grid.celledit.js"/>"></script-->
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery.cookie.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/common/commonGrid.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/common/custom.jquery.plugin.js"/>"></script>
+
+<%-- 
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/loadmask/jquery.loadmask.min.js"/>"></script>
+ --%>
+<!-- jquery form plugin -->
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/form/jquery.form.js"/>"></script>
+
+<script type="text/javascript" src="/js/lib/plugins/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript">
+$(function(){
+	var isIE = window.navigator.appName == 'Microsoft Internet Explorer';
+	if (!isIE){
+		var bsInput = document.createElement('script'); 
+		bsInput.type = 'text/javascript';
+	    bsInput.src = '/js/lib/plugins/bootstrap/bootstrap-fileinput.js';
+	    $("head").append(bsInput);
+	}
+});
+</script>
+
+<!--[if gt IE 8]>
+<script type="text/javascript" src="<c:url value="/js/common/custom-fileinput-ie.js"/>"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+<script type="text/javascript" src="<c:url value="/js/common/custom-fileinput-ie.js"/>"></script>
+<![endif]-->
+
+<%-- 
+<script type="text/javascript" src="/js/lib/plugins/select2/eakroko.js"></script>
+<script src="/js/lib/plugins/select2/select2.min.js"></script>
+ --%>
+<!-- jQuery easyUI plugin -->
+<script type="text/javascript" src="<c:url value="/js/common/address.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootbox/bootbox.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-toastr/toastr.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/jquery.blockui.min.js"/>"></script>
+
+<script type="text/javascript" src="<c:url value="/js/common/menu.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-daterangepicker/daterangepicker.js"/>"></script>
+
+<!-- color js -->
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/color/jscolor.js"/>"></script>
+
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery.Jcrop.js"/>"></script>
+
+<qc:importJS />

@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="EUC-KR"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+   
+    <!--
+    **************************************************
+    * Interceptors
+    **************************************************
+    -->
+		<bean id="boAuthorityCheckInterceptor"
+			class="com.kpc.eos.core.web.interceptor.AuthorityCheckInterceptor"
+			p:urlPrefix="/bo">
+			<property name="passUri">
+				<list>
+					<value>Login.do</value>
+					<value>Address.do</value>
+					<value>UserPage.do</value>
+					<value>UserItem.do?cmd=viewItemPage</value>
+					<value>Info.do?cmd=viewInfoPage</value>
+				</list>
+			</property>
+		</bean>
+
+		<bean id="boDetectDeviceCmdInterceptor"
+			class="com.kpc.eos.core.web.interceptor.DetectDeviceCmdInterceptor">
+		</bean>
+    <!--
+    **************************************************
+    * Url Mapping
+    **************************************************
+    -->
+    <bean id="handlerMapping" 
+        class="com.kpc.eos.core.web.handler.GeneralUrlHandlerMapping"
+        p:urlPrefix="/bo"
+        p:order="11">
+        <property name="interceptors">
+            <list>
+				<ref bean="loggingInterceptor" />
+                <ref bean="boAuthorityCheckInterceptor" />
+                <ref bean="boDetectDeviceCmdInterceptor" />
+            </list>
+        </property>
+        <property name="mappings">
+            <props>
+                
+                <!-- Common Controllers -->
+                <prop key="Login.do">boLoginController</prop>
+                <prop key="Main.do">boMainController</prop>
+                <prop key="Address.do">boAddressController</prop>
+                
+                <!-- For admin -->
+                <prop key="Item.do">boItemController</prop>
+                
+                <!-- 1. System Data Management -->
+                <prop key="User.do">boUserController</prop>
+                <prop key="Dept.do">boDepartController</prop>
+                <prop key="Menu.do">boMenuController</prop>
+                <prop key="Code.do">boCodeController</prop>
+                <prop key="ActionUrl.do">boActionUrlController</prop>
+                
+                <!-- 2. Business Setting Management -->
+                <prop key="UserItem.do">boUserItemController</prop>
+                <prop key="PayType.do">boPayTypeController</prop>
+                <prop key="CustType.do">boCustTypeController</prop>
+                <prop key="CustType.do">boCustTypeController</prop>
+                <prop key="HostCust.do">boHostCustController</prop>
+                <prop key="DeliveryAddr.do">boDeliveryAddrController</prop>
+                <prop key="MenuSetting.do">boMenuSettingController</prop>
+                <prop key="Store.do">boStoreController</prop>
+                <prop key="BizSetting.do">boBizSettingController</prop>
+                <prop key="WorkFlow.do">boWorkFlowController</prop>
+                <prop key="BizData.do">boBizDataController</prop>
+                <prop key="UserMenu.do">boUserMenuController</prop>
+                
+                <!-- 3 Order Menu -->
+                <prop key="Order.do">boOrderController</prop>
+                <prop key="Sale.do">boSaleController</prop>
+                <prop key="Receipt.do">boReceiptController</prop>
+                <prop key="Return.do">boReturnController</prop>
+                <prop key="Price.do">boPriceController</prop>
+                <prop key="Payment.do">boPaymentController</prop>
+                <prop key="Info.do">boInfoController</prop>
+                
+                <!-- 4. Bill Menu -->
+                <prop key="BillProc.do">boBillProcController</prop>
+                
+                
+                <!-- 5. Statistic Menu -->
+                <prop key="BillSearch.do">boBillSearchController</prop>
+                <prop key="StockSearch.do">boStockSearchController</prop>
+                <prop key="CustSearch.do">boCustSearchController</prop>
+                <prop key="SaleCustSearch.do">boSaleCustSearchController</prop>
+                <prop key="SaleDaySearch.do">boSaleDaySearchController</prop>
+                <prop key="SaleItemSearch.do">boSaleItemSearchController</prop>
+                <prop key="SaleClerkSearch.do">boSaleClerkSearchController</prop>
+                
+            <!-- PAGE -->
+				<prop key="ConfigPage.do">boConfigPageController</prop>
+				<prop key="UserPage.do">boUserPageController</prop>
+                
+            </props>
+        </property>
+    </bean>
+
+    <!--
+    **************************************************
+    * Controllers
+    **************************************************
+    -->
+    
+    <!-- Common Controllers -->
+    <bean id="boLoginController" parent="abstractController"
+    	class="com.kpc.eos.controller.common.LoginController"
+    	p:userService-ref="userService"
+    	p:addrService-ref="addrService"
+    	p:bizSettingService-ref="bizSettingService"
+    />
+    <bean id="boMainController" parent="abstractController"
+    	class="com.kpc.eos.controller.common.MainController"
+    />
+   	<bean id="boAddressController" parent="abstractController"
+		class="com.kpc.eos.controller.common.AddressController"
+		p:addrService-ref="addrService"
+	/>
+	
+   	<!-- 1. System Data Management -->
+   	<!-- User Management Controller -->
+   	<bean id="boUserController" parent="abstractController"
+		class="com.kpc.eos.controller.dataMng.UserController"
+		p:userService-ref="userService"
+	/>
+	<!-- Department Management Controller -->
+	<bean id="boDepartController" parent="abstractController"
+		class="com.kpc.eos.controller.dataMng.DepartmentController"
+		p:departmentService-ref="departmentService"
+	/>
+	
+	<!-- 2. Business Setting Management -->
+   	<!-- User Item Management -->
+   	<bean id="boUserItemController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.UserItemController"
+		p:userItemService-ref="userItemService"
+		p:bizSettingService-ref="bizSettingService"
+		p:storeService-ref="storeService"
+		p:itemService-ref="itemService"
+		p:bizDataService-ref="bizDataService"
+		p:itemWidgetService-ref="itemWidgetService"
+		p:commentService-ref="commentService"
+		p:userService-ref="userService"
+		p:userPageService-ref="userPageService"
+	/>
+   	<!-- Paytype Management -->
+   	<bean id="boPayTypeController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.PayTypeController"
+		p:payTypeService-ref="payTypeService"
+	/>
+   	<!-- Customer Type Management -->
+   	<bean id="boCustTypeController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.CustTypeController"
+		p:custTypeService-ref="custTypeService"
+	/>
+   	<!-- Customer Setting Management -->
+   	<bean id="boHostCustController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.HostCustController"
+		p:hostCustService-ref="hostCustService"
+		p:custTypeService-ref="custTypeService"
+		p:userService-ref="userService"
+		p:userItemService-ref="userItemService"
+		p:bizDataService-ref="bizDataService"
+		p:bizSettingService-ref="bizSettingService"
+	/>
+	<!-- Delivery Address Management -->
+	<bean id="boDeliveryAddrController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.DeliveryAddrController"
+		p:deliveryAddrService-ref="deliveryAddrService"
+		p:addrService-ref="addrService"
+	/>
+	<!-- Menu Setting Management -->
+	<bean id="boMenuSettingController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.MenuSettingController"
+		p:menuSettingService-ref="menuSettingService"
+	/>	
+	<!-- Store Management -->
+	<bean id="boStoreController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.StoreController"
+		p:storeService-ref="storeService"
+		p:departmentService-ref="departmentService"
+	/>
+	<!-- Business Setting Management -->
+	<bean id="boBizSettingController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.BizSettingController"
+		p:bizSettingService-ref="bizSettingService"
+	/>
+	<!-- Work Flow Management -->
+	<bean id="boWorkFlowController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.WorkFlowController"
+		p:workFlowService-ref="workFlowService"
+		p:bizDataService-ref="bizDataService"
+	/>
+	
+	<!-- Business Data Management -->
+	<bean id="boBizDataController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.BizDataController"
+		p:bizDataService-ref="bizDataService"
+		p:hostCustService-ref="hostCustService"
+		p:payTypeService-ref="payTypeService"
+		p:custTypeService-ref="custTypeService"
+	/>
+	
+	<!-- User Menu Management -->
+	<bean id="boUserMenuController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.UserMenuController"
+		p:userMenuService-ref="userMenuService"
+	/>
+	
+	<!-- 3. Bill menu -->
+	<bean id="boOrderController" parent="abstractController"
+		class="com.kpc.eos.controller.bill.OrderController"
+		p:billService-ref="billService"
+		p:hostCustService-ref="hostCustService"
+		p:userService-ref="userService"
+		p:userItemService-ref="userItemService"
+		p:addrService-ref="addrService"
+		p:bizSettingService-ref="bizSettingService"
+		p:bizDataService-ref="bizDataService"
+		p:payTypeService-ref="payTypeService"
+		p:deliveryAddrService-ref="deliveryAddrService"
+		p:departmentService-ref="departmentService"
+	/>
+	
+	<bean id="boSaleController" parent="abstractController"
+		class="com.kpc.eos.controller.bill.SaleController"
+		p:billService-ref="billService"
+		p:hostCustService-ref="hostCustService"
+		p:userService-ref="userService"
+		p:userItemService-ref="userItemService"
+		p:addrService-ref="addrService"
+		p:bizSettingService-ref="bizSettingService"
+		p:bizDataService-ref="bizDataService"
+		p:payTypeService-ref="payTypeService"
+		p:deliveryAddrService-ref="deliveryAddrService"
+		p:departmentService-ref="departmentService"
+	/>
+	
+	<bean id="boReceiptController" parent="abstractController"
+		class="com.kpc.eos.controller.bill.ReceiptController"
+		p:billService-ref="billService"
+		p:hostCustService-ref="hostCustService"
+		p:payTypeService-ref="payTypeService"
+		p:storeService-ref="storeService"
+		p:userService-ref="userService"
+		p:userItemService-ref="userItemService"
+		p:addrService-ref="addrService"
+		p:workFlowService-ref="workFlowService"
+		p:itemStockService-ref="itemStockService"
+		p:billProcService-ref="billProcService"
+	/>
+	
+	<bean id="boReturnController" parent="abstractController"
+		class="com.kpc.eos.controller.bill.ReturnController"
+		p:billService-ref="billService"
+		p:storeService-ref="storeService"
+		p:userItemService-ref="userItemService"
+		p:userService-ref="userService"
+		p:itemStockService-ref="itemStockService"
+		p:billProcService-ref="billProcService"
+	/>
+	
+	<bean id="boPriceController" parent="abstractController"
+		class="com.kpc.eos.controller.bill.PriceController"
+		p:billService-ref="billService"
+		p:userItemService-ref="userItemService"
+		p:userService-ref="userService"
+		p:billProcService-ref="billProcService"
+		p:bizSettingService-ref="bizSettingService"
+		p:workFlowService-ref="workFlowService"
+		p:priceDetailService-ref="priceDetailService"
+	/>
+	
+	<bean id="boPaymentController" parent="abstractController"
+		class="com.kpc.eos.controller.bill.PaymentController"
+		p:billService-ref="billService"
+		p:hostCustService-ref="hostCustService"
+		p:userService-ref="userService"
+		p:addrService-ref="addrService"
+		p:payTypeService-ref="payTypeService"
+		p:bizDataService-ref="bizDataService"
+	/>
+	
+	<bean id="boInfoController" parent="abstractController"
+		class="com.kpc.eos.controller.bill.InfoController"
+		p:billService-ref="billService"
+		p:userService-ref="userService"
+		p:bizDataService-ref="bizDataService"
+		p:infoService-ref="infoService"
+	/>
+	
+	
+	
+	<!-- 4. Bill Process Management -->
+	<bean id="boBillProcController" parent="abstractController"
+		class="com.kpc.eos.controller.billProcMng.BillProcController"
+		p:billProcService-ref="billProcService"
+		p:bizDataService-ref="bizDataService"
+		p:userItemService-ref="userItemService"
+		p:billService-ref="billService"
+		p:bizSettingService-ref="bizSettingService"
+		p:workFlowService-ref="workFlowService"
+		p:priceDetailService-ref="priceDetailService"
+	/>
+	
+	<!-- For admin -->
+	<bean id="boItemController" parent="abstractController"
+		class="com.kpc.eos.controller.system.ItemController"
+		p:itemService-ref="itemService"
+	/>
+	<!-- Menu Management -->
+	<bean id="boMenuController" parent="abstractController"
+		class="com.kpc.eos.controller.system.MenuController"
+		p:menuService-ref="menuService"
+	/>	
+	<!-- Code Management -->
+	<bean id="boCodeController" parent="abstractController"
+		class="com.kpc.eos.controller.system.CodeController"
+		p:codeService-ref="codeService"
+	/>		
+	<!-- ActionUrl Management -->
+	<bean id="boActionUrlController" parent="abstractController"
+		class="com.kpc.eos.controller.system.ActionUrlController"
+		p:menuService-ref="menuService"
+	/>		
+		
+	
+	<!-- 5. Statistic -->
+	<!-- Bill Search -->
+	<bean id="boBillSearchController" parent="abstractController"
+		class="com.kpc.eos.controller.statistic.BillSearchController"
+		p:statisticService-ref="statisticService"
+	/>		
+	<bean id="boStockSearchController" parent="abstractController"
+		class="com.kpc.eos.controller.statistic.StockSearchController"
+		p:statisticService-ref="statisticService"
+		p:userItemService-ref="userItemService"
+	/>		
+	<bean id="boCustSearchController" parent="abstractController"
+		class="com.kpc.eos.controller.statistic.CustSearchController"
+		p:statisticService-ref="statisticService"
+		p:custTypeService-ref="custTypeService"
+	/>		
+	<bean id="boSaleCustSearchController" parent="abstractController"
+		class="com.kpc.eos.controller.statistic.SaleCustSearchController"
+		p:statisticService-ref="statisticService"
+	/>		
+	<bean id="boSaleDaySearchController" parent="abstractController"
+		class="com.kpc.eos.controller.statistic.SaleDaySearchController"
+		p:statisticSaleService-ref="statisticSaleService"
+	/>		
+	<bean id="boSaleItemSearchController" parent="abstractController"
+		class="com.kpc.eos.controller.statistic.SaleItemSearchController"
+		p:statisticSaleService-ref="statisticSaleService"
+		p:statisticService-ref="statisticService"
+	/>		
+	<bean id="boSaleClerkSearchController" parent="abstractController"
+		class="com.kpc.eos.controller.statistic.SaleClerkSearchController"
+		p:statisticSaleService-ref="statisticSaleService"
+	/>
+	
+	<!-- Page -->	
+	<bean id="boConfigPageController" parent="abstractController"
+		class="com.kpc.eos.controller.bizSetting.ConfigPageController"
+		p:configPageService-ref="configPageService" 
+		p:userItemService-ref="userItemService"
+		p:bizDataService-ref="bizDataService" 
+	/>
+	<bean id="boUserPageController" parent="abstractController"
+		class="com.kpc.eos.controller.userPage.UserPageController"
+		p:userPageService-ref="userPageService"
+		p:userService-ref="userService"
+		p:configPageService-ref="configPageService" 
+		p:userItemService-ref="userItemService"
+		p:bizSettingService-ref="bizSettingService" 
+		p:commentService-ref="commentService"
+		p:deliveryAddrService-ref="deliveryAddrService" 
+		p:addrService-ref="addrService"
+		p:hostCustService-ref="hostCustService"
+		p:payTypeService-ref="payTypeService"
+		p:bizDataService-ref="bizDataService" 
+	/>			
+		<!-- p:hostCustService-ref="hostCustService" -->
+	
+</beans>

@@ -1,0 +1,68 @@
+<%@page import="com.kpc.eos.core.Constants"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<meta http-equiv="Content-Type" 	content="text/html; charset=UTF-8">
+<meta http-equiv="Cache-Control" 	content="No-Cache" />
+<meta http-equiv="Pragma" 			content="No-Cache" />
+<meta http-equiv="Expires" 			content="now" />
+<meta name="robots" content="noindex, nofollow">
+<meta name="keywords" 				content="EOS Mobile" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0">
+
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="img/favicon.png">
+    <link rel="apple-touch-icon" href="img/icon57.png" sizes="57x57">
+    <link rel="apple-touch-icon" href="img/icon72.png" sizes="72x72">
+    <link rel="apple-touch-icon" href="img/icon76.png" sizes="76x76">
+    <link rel="apple-touch-icon" href="img/icon114.png" sizes="114x114">
+    <link rel="apple-touch-icon" href="img/icon120.png" sizes="120x120">
+    <link rel="apple-touch-icon" href="img/icon144.png" sizes="144x144">
+    <link rel="apple-touch-icon" href="img/icon152.png" sizes="152x152">
+    <link rel="apple-touch-icon" href="img/icon180.png" sizes="180x180">
+    <!-- END Icons -->
+
+    <!-- Stylesheets for proui -->
+    <link href="<c:url value="/css/mobile/proui/bootstrap.min.css"/>" rel="stylesheet" type="text/css" />
+    <link href="<c:url value="/css/mobile/proui/plugins.css"/>" rel="stylesheet" type="text/css" />
+    <link href="<c:url value="/css/mobile/proui/main.css"/>" rel="stylesheet" type="text/css" />
+    
+	<link href="<c:url value="/js/lib/plugins/bootstrap-toastr/toastr.min.css"/>" rel="stylesheet" type="text/css" />
+	
+	<LINK href="<c:url value="/css/common.css"/>" rel="stylesheet" type="text/css">
+	
+<script type="text/javascript">
+var _contextPath    = "<%= request.getContextPath() %>";
+var _milliseconds	= <%= (Long) request.getAttribute("SYSTEM_MILLISECONDS") %>;
+var imageServerUrl = "<%= Constants.IMAGE_SERVER_URL %>";
+
+</script>
+
+<!-- script src="<c:url value="/js/lib/jqGridMobile/jquery.min.js"/>"></script-->
+<!-- For proui -->
+<script src="<c:url value="/js/lib/proui/vendor/jquery-1.11.1.min.js"/>"></script>
+
+<!-- For common -->
+
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery.json-2.2.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/jquery.blockui.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/common/common.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/jquery.validate.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/common/custom.jquery.plugin.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/backoffice/boCommon.js"/>"></script>
+<%-- validation js --%>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/jquery.validate.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/jquery.metadata.js"/>"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/messages_zh.js"/>"></script>
+<!-- jquery form plugin -->
+<script type="text/javascript" src="<c:url value="/js/lib/jquery/form/jquery.form.js"/>"></script>
+
+<script type="text/javascript" src="/js/lib/plugins/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-toastr/toastr.min.js"/>"></script>
+<script type="text/javascript" src="/js/lib/plugins/bootstrap/bootstrap-fileinput.js"></script>
+
+<!-- jQuery easyUI plugin -->
+<script type="text/javascript" src="<c:url value="/js/common/address.js"/>"></script>
+
+<qc:importJS />

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!--
+        **************************************************
+        * Method Resolver
+        **************************************************
+    -->
+    <bean id="methodNameResolver"
+        class="org.springframework.web.servlet.mvc.multiaction.ParameterMethodNameResolver"
+        p:paramName="cmd" 
+        p:defaultMethodName="list"
+    />
+
+    <!--
+        **************************************************
+        * View Resolver
+        **************************************************
+    -->
+	<bean class="org.springframework.web.servlet.view.XmlViewResolver"
+	   p:order="1"
+	   p:location="/WEB-INF/config/dispatcher/views.xml"
+    />
+
+	<bean id="tilesViewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver"> 
+		<property name="viewClass" value="org.springframework.web.servlet.view.tiles2.TilesView"/>
+		<property name="redirectHttp10Compatible" value="false" />
+		<property name="order" value="2"/>
+	</bean>
+	
+    <!--
+        **************************************************
+        * Tiles Config
+        **************************************************
+    -->
+    <bean id="tilesConfigurer" class="com.kpc.eos.core.web.tiles.CustomTilesConfigurer">
+        <property name="definitions">
+        	<list>
+            	<value>/WEB-INF/config/tiles2/tiles2.cfg.xml</value>
+			</list>
+        </property>
+    </bean>
+
+    <!--
+        **************************************************
+        * Exception Resolver
+        **************************************************
+    -->
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+	    <property name="exceptionMappings">
+	        <props>
+	            <prop key="com.kpc.eos.core.exception.BaseException">common/errors/error</prop>
+	        </props>
+	    </property>
+	    <property name="defaultErrorView" value="common/errors/error"/>
+	</bean>
+
+    <!--
+    **************************************************
+    * Interceptors
+    **************************************************
+    -->
+    <bean id="loggingInterceptor" class="com.kpc.eos.core.web.interceptor.LoggingInterceptor"/>
+    
+    <bean id="handlerMapping"
+        class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"
+        p:order="1">
+        <property name="interceptors">
+            <list>
+                <ref bean="loggingInterceptor"/>
+            </list>
+        </property>
+        <property name="mappings">
+            <props>
+             	<prop key="FileUpload.do">fileUploadController</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--
+        **************************************************
+        * Controllers
+        **************************************************
+    -->
+    <bean id="abstractController" abstract="true" p:methodNameResolver-ref="methodNameResolver" />
+    
+    <bean id="fileUploadController" parent="abstractController"
+		class="com.kpc.eos.controller.common.FileUploadController" 
+		p:fileService-ref="fileService"
+	/>
+</beans>

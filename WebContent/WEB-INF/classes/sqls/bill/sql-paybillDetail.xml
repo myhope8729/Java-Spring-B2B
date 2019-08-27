@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="paybillDetail">
+
+	<typeAlias alias="paybillDetail" type="com.kpc.eos.model.bill.PayBillDetailModel" />
+	
+	<select id="getPaybillDetailList" resultClass="paybillDetail">
+		SELECT  p.bill_id			 AS billId,
+				p.bill_type			 AS billType,
+				p.user_id			 AS userId,
+				p.dept_id			 AS deptId,
+				p.cust_user_id		 AS custUserId,
+				p.pname				 AS pname,
+				p.paytype1			 AS paytype1,
+				(SELECT paytype_name FROM eos_paytype_new WHERE paytype_id=p.paytype1 ) AS paytypeName,
+				p.paytype2			 AS paytype2,
+				p.ration1			 AS ration1,
+				p.ration			 AS ration,
+				p.tot1				 AS tot1,
+				p.tot				 AS tot,
+				p.custtype_id		 AS custtypeId
+		  FROM  eos_paybill_detail_new p
+		 WHERE  p.bill_id = #billId#
+	</select>
+	
+	<insert id="insertPaybillDetail">
+		INSERT INTO eos_paybill_detail_new
+		(
+			bill_id,
+			bill_type,
+			user_id,
+			dept_id,
+			cust_user_id,
+			pname,
+			paytype1,
+			paytype2,
+			ration1,
+			ration,
+			tot1,
+			tot,
+			custtype_id,
+			<!-- brand, -->
+			state,
+			create_date,
+			create_by,
+			update_date,
+			update_by
+		)
+		VALUES
+		(
+			#billId#,
+			#billType#,
+			#userId#,
+			#deptId#,
+			#custUserId#,
+			#pname#,
+			#paytype1#,
+			#paytype2#,
+			#ration1#,
+			#ration#,
+			#tot1#,
+			#tot#,
+			#custtypeId#,
+			<!-- #brand#, -->
+			#state#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+			#updateBy#
+		)
+	</insert>
+	
+	
+	<update id="updatePaybillDetail">
+		UPDATE  eos_paybill_detail_new p
+		   SET  p.id				 = #id#,
+				p.bill_id			 = #billId#,
+				p.bill_type			 = #billType#,
+				p.user_id			 = #userId#,
+				p.dept_id			 = #deptId#,
+				p.cust_user_id		 = #custUserId#,
+				p.pname				 = #pname#,
+				p.paytype1			 = #paytype1#,
+				p.paytype2			 = #paytype2#,
+				p.ration1			 = #ration1#,
+				p.ration			 = #ration#,
+				p.tot1				 = #tot1#,
+				p.tot				 = #tot#,
+				p.custtype_id		 = #custtypeId#,
+				<!-- p.brand				 = #brand#, -->
+				p.state				 = #state#,
+				p.update_date		 = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				p.update_by			 = #updateBy#
+		 WHERE  
+				p.id				 = #id#
+	</update>
+	
+	<delete id="deletePaybillDetailByBillId">
+		DELETE FROM eos_paybill_detail_new WHERE bill_id = #billId#
+	</delete>
+	
+</sqlMap>

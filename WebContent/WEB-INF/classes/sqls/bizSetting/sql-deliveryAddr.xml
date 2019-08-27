@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="deliveryAddr">
+
+	<typeAlias alias="deliveryAddr" type="com.kpc.eos.model.bizSetting.DeliveryAddrModel" />
+	
+	<select id="getDeliveryAddrList" resultClass="deliveryAddr">
+		SELECT 	addr_id									AS addrId,
+				(SELECT CONCAT(IFNULL(c.location_name,''), IFNULL(b.location_name,''), IFNULL(a.location_name,'')) fullLocationName
+			       FROM eos_locations_new a
+			  	   LEFT OUTER JOIN eos_locations_new b ON a.upper_location_id = b.location_id
+			  	   LEFT OUTER JOIN  eos_locations_new c ON b.upper_location_id = c.location_id
+			 	  WHERE a.location_id = d.location_id)  AS locationName,
+			 	address									AS address,
+			 	contact_name							AS contactName,
+			 	tel_no									AS telNo,
+			 	default_yn								AS defaultYn,
+				note									AS note,
+				state									AS state
+		 FROM  eos_delivery_addr_new d
+		WHERE  user_id = #userId#
+	 ORDER BY  $page.sidx$ $page.sord$
+		LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalCountDeliveryAddrList" resultClass="Integer">
+		SELECT 	COUNT(*)	AS cnt
+		 FROM	eos_delivery_addr_new d
+		WHERE	user_id = #userId#
+	</select>
+	
+	<select id="getDeliveryAddr" resultClass="deliveryAddr">
+		SELECT  delivery.user_id								AS userId,
+				delivery.addr_id								AS addrId,
+				location.provId									AS provinceId,
+				location.cityId									AS cityId,
+				location.districtId								AS districtId,
+				location.addressLevel							AS provinceLevel,
+				delivery.location_id							AS locationId,
+				
+				(SELECT CONCAT(IFNULL(c.location_name,''), IFNULL(b.location_name,''), IFNULL(a.location_name,'')) fullLocationName
+			       FROM eos_locations_new a
+			  	   LEFT OUTER JOIN eos_locations_new b ON a.upper_location_id = b.location_id
+			  	   LEFT OUTER JOIN  eos_locations_new c ON b.upper_location_id = c.location_id
+			 	  WHERE a.location_id = delivery.location_id)  AS locationName,
+				
+				delivery.address								AS address,
+				delivery.contact_name							AS contactName,
+				delivery.tel_no									AS telNo,
+				delivery.mobile_no								AS mobileNo,
+				delivery.qq_no									AS qqNo,
+				delivery.note									AS note,
+				delivery.default_yn								AS defaultYn,
+				delivery.state									AS state
+		  FROM  (SELECT  IF(c.location_id IS NULL, IFNULL(b.location_id, a.location_id), c.location_id)  			AS provId,
+		  				 b.location_id																				AS cityId,
+		  				 a.location_id																				AS districtId,
+		  				 a.location_id																				AS locationId,
+		  				 IF(c.location_level IS NULL, IFNULL(b.location_level, a.location_level), c.location_level)	AS addressLevel
+					FROM eos_locations_new a
+					LEFT OUTER JOIN eos_locations_new b ON a.upper_location_id = b.location_id
+					LEFT OUTER JOIN  eos_locations_new c ON b.upper_location_id = c.location_id) AS location,
+			   eos_delivery_addr_new delivery
+	    WHERE  delivery.addr_id = #addrId#
+	      AND  delivery.location_id = location.locationId
+	</select>
+	
+	<!-- used in Order Form -->
+	<select id="getUserDeliveryAddrList" resultClass="deliveryAddr">
+		SELECT 	addr_id									AS addrId,
+				(SELECT CONCAT(IFNULL(c.location_name,''), IFNULL(b.location_name,''), IFNULL(a.location_name,'')) fullLocationName
+			       FROM eos_locations_new a
+			  	   LEFT OUTER JOIN eos_locations_new b ON a.upper_location_id = b.location_id
+			  	   LEFT OUTER JOIN  eos_locations_new c ON b.upper_location_id = c.location_id
+			 	  WHERE a.location_id = d.location_id)  AS locationName,
+			 	address									AS address,
+			 	contact_name							AS contactName,
+			 	tel_no									AS telNo,
+			 	default_yn								AS defaultYn,
+				note									AS note
+		 FROM  eos_delivery_addr_new d
+		WHERE  user_id = #userId# AND state = 'ST0001'
+	</select>
+	
+	<update id="updateDefaultYn">
+		UPDATE  eos_delivery_addr_new
+		   SET  default_yn = 'N'
+		 WHERE  user_id = #userId#
+	</update>
+	
+	<update id="updateDeliveryAddr">
+		UPDATE  eos_delivery_addr_new
+		   SET  location_id 		= #locationId#,
+		   		address				= #address#,
+		   		contact_name		= #contactName#,
+		   		tel_no				= #telNo#,
+		   		note				= #note#,
+		   		default_yn			= #defaultYn#,
+		   		state				= #state#,
+		   		chelp				= #chelp#,
+		   		update_date			= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by			= #updateBy#
+		 WHERE  addr_id				= #addrId#
+	</update>
+	
+	<insert id="insertDeliveryAddr">
+		INSERT INTO  eos_delivery_addr_new
+					 (
+					 	addr_id,			user_id,			location_id,			address,
+					 	contact_name,		tel_no,				default_yn,				chelp,
+					 	note,				create_date,		create_by,				update_date,			update_by
+					 )
+			 VALUES  (
+			 			get_tbl_next_id_value('eos_delivery_addr_new'), #userId#,	#locationId#, #address#,
+			 			#contactName#,		#telNo#,			#defaultYn#,			#chelp#,
+			 			#note#,				DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),    #createBy#,
+			 			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),  #updateBy#
+			 		 )
+	</insert>
+</sqlMap>

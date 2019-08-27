@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="user">
+	
+	<typeAlias alias="user" type="com.kpc.eos.model.dataMng.UserModel" />
+	<typeAlias alias="dept" type="com.kpc.eos.model.dataMng.DepartmentModel" />
+	
+	<resultMap id="UserResult" class="user">
+		<result property="userId" column="USER_ID" />
+		<result property="userNo" column="USER_NO"/>
+		<result property="userName" column="USER_NAME"/>
+		<result property="userKind" column="USER_KIND"/>
+		<result property="locationId" column="LOCATION_ID"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="contactName" column="CONTACT_NAME"/>
+		<result property="telNo" column="TEL_NO"/>
+		<result property="mobileNo" column="MOBILE_NO"/>
+		<result property="qqNo" column="QQ_NO"/>
+		<result property="faxNo" column="FAX_NO"/>
+		<result property="emailAddr" column="EMAIL_ADDR"/>
+		<result property="cardNo" column="CARD_NO"/>
+		<result property="type1" column="TYPE1"/>
+		<result property="url" column="URL"/>
+		<result property="topic1" column="TOPIC1"/>
+		<result property="topic2" column="TOPIC2"/>
+		<result property="webName" column="WEB_NAME"/>
+		<result property="logoImgPath" column="LOGO_IMG_PATH" />
+		<result property="mainColor" column="MAIN_COLOR"/>
+		<result property="bkColor" column="BK_COLOR"/>
+		<result property="note" column="NOTE"/>
+		<result property="chelp" column="CHELP"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<result property="createBy" column="CREATE_BY"/>
+		<result property="updateDate" column="UPDATE_DATE"/>
+		<result property="updateBy" column="UPDATE_BY"/>
+		<result property="oldUserId" column="OLD_USER_ID"/>
+		<result property="saleOnlineMark" column="SALE_ONLINE_MARK"/>
+	</resultMap>
+	
+	<resultMap id="basicEmployerResult" class="user">
+		<result property="userId" column="USER_ID" />
+		<result property="empId" column="EMP_ID"/>
+		<result property="empNo" column="EMP_NO"/>
+		<result property="empName" column="EMP_NAME"/>
+		<result property="deptId" column="DEPT_ID" />
+		<result property="telNo" column="TEL_NO" />
+		<result property="mobileNo" column="MOBILE_NO" />
+		<result property="qqNo" column="QQ_NO" />
+		<result property="emailAddr" column="EMAIL_ADDR" />
+		<result property="empRole" column="EMP_ROLE" />
+		<result property="firstMark" column="FIRSTMARK" />
+		<result property="state" column="STATE" />
+	</resultMap>
+	
+	<resultMap id="getEmployerListResult" class="user" extends="basicEmployerResult">
+		<result property="dept.deptId" column="DEPT_ID" />
+		<result property="dept.deptNo" column="DEPT_NO" />
+		<result property="dept.deptName" column="DEPT_NAME" />
+	</resultMap>
+	
+	<select id="login" resultClass="user">
+ 		SELECT emp.emp_id 				AS empId,
+			   emp.emp_no				AS empNo,
+			   emp.emp_name				AS empName,
+			   emp.pwd					AS pwd,
+			   emp.emp_role				AS empRole,
+			   emp.firstmark			AS userYn,
+			   usr.user_id				AS userId,
+			   usr.user_no				AS userNo,
+			   usr.user_name			AS userName,
+			   usr.tel_no				AS telNo,
+			   usr.address				AS userAddr,
+			   usr.location_id			AS locationId,
+			   usr.user_kind			AS userKind,	
+			   usr.main_color			AS mainColor,	
+			   usr.bk_color				AS bkColor,
+			   usr.web_name				AS webName,
+			   usr.logo_img_path 		AS logoImgPath,
+			   usr.topic1 				AS topic1,
+			   usr.topic2 				AS topic2
+		  FROM eos_emp_new emp
+		  LEFT JOIN eos_user_new usr ON emp.USER_ID = usr.USER_ID
+		 WHERE emp.emp_no = #empId#
+		   AND emp.pwd    = #pwd#
+	</select>
+	
+	<select id="getEmployerList" resultMap="getEmployerListResult">
+		SELECT  e.EMP_ID, 
+				e.USER_ID, 
+				e.DEPT_ID, 
+				e.EMP_NO, 
+				e.EMP_NAME, 
+				e.TEL_NO, 
+				e.QQ_NO, 
+				e.EMAIL_ADDR, 
+				e.MOBILE_NO, 
+				e.EMP_ROLE, 
+				e.STATE, 
+				e.FIRSTMARK,
+				d.DEPT_ID, 
+				d.DEPT_NO,
+				d.DEPT_NAME 
+		  FROM  eos_emp_new e
+		  LEFT OUTER JOIN eos_dept_new d ON d.dept_id = e.dept_id
+		 WHERE  e.user_id = #userId#
+		 	<isNotEmpty prepend="and" property="codeId">
+				e.state = #codeId#
+			</isNotEmpty>
+	  ORDER BY  e.emp_name
+	</select>
+	
+	<!-- 
+	If emp is a main account(company account, that's firstmark=Y), get all employer list.
+	Otherwise, get the employers' list except the main account.
+	@params: userYn : Y or N
+	-->
+	<select id="getEmployerListByUserPerm" resultMap="getEmployerListResult">
+		SELECT  
+				e.EMP_ID, 
+				e.USER_ID, 
+				e.DEPT_ID, 
+				e.EMP_NO, 
+				e.EMP_NAME, 
+				e.TEL_NO, 
+				e.QQ_NO, 
+				e.EMAIL_ADDR, 
+				e.MOBILE_NO, 
+				e.EMP_ROLE, 
+				e.STATE, 
+				e.FIRSTMARK,
+				d.DEPT_ID, 
+				d.DEPT_NO,
+				d.DEPT_NAME 
+		  FROM  eos_emp_new e
+		  LEFT  OUTER JOIN eos_dept_new d ON d.dept_id = e.dept_id
+		 WHERE  e.user_id = #userId#
+		 		<isNotEmpty prepend="and" property="codeId">
+					e.state = #codeId#
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="userYn">
+					<isEqual prepend="" property="userYn" compareValue="N">
+						e.firstmark != 'Y'
+					</isEqual>
+				</isNotEmpty>
+	  ORDER BY $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	
+	<select id="countEmployerListByUserPerm" resultClass="Integer">
+		SELECT  count(*) cnt
+		  FROM  eos_emp_new e
+		  LEFT OUTER JOIN eos_dept_new d ON d.dept_id = e.dept_id
+		 WHERE  e.user_id = #userId#
+		 		<isNotEmpty prepend="and" property="codeId">
+					e.state = #codeId#
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="userYn">
+					<isEqual prepend="" property="userYn" compareValue="N">
+						e.firstmark != 'Y'
+					</isEqual>
+				</isNotEmpty>
+	</select>
+	
+	
+	<select id="findEmployerListByUser" resultClass="user">
+		SELECT  emp_id				AS empId,
+				emp_no				AS empNo,
+				emp_name			AS empName
+		  FROM  eos_emp_new
+		 WHERE  user_id = #userId#
+		   AND  state = 'ST0001'
+	  ORDER BY  empName
+	</select>
+	
+	<select id="getNextUserId" resultClass="string">
+		 SELECT CONCAT('USER', LPAD(CONV(IFNULL(SUBSTRING(MAX(user_id), 5), 0), 11, 11) + 1, 11, '0')) user_id  
+		 FROM eos_user_new
+	</select>
+	
+	<select id="getNextTblId" resultClass="String">
+		SELECT  get_tbl_next_id_value(#tblName#) AS idStr
+	</select>
+	
+	<select id="getUser" resultClass="user">
+		SELECT 	* 
+		  FROM 	eos_user_new
+		 WHERE	$fieldName$ = #fieldVal#
+		 LIMIT	1
+	</select>
+	
+	<select id="getUserById" resultMap="UserResult">
+		SELECT 	*
+	  	  FROM  eos_user_new
+	  	 WHERE  user_id = #userId#
+	</select>
+	
+	<select id="getEmployerByEmpId" resultMap="basicEmployerResult">
+		SELECT 	*
+	  	  FROM  eos_emp_new
+	  	 WHERE  emp_id = #empId#
+	</select>
+	
+	<select id="getEmpPwdById" resultClass="string">
+		SELECT 	pwd
+	  	  FROM  eos_emp_new
+	  	 WHERE  emp_id = #empId#
+	</select>
+	
+	<select id="existEmployerByNo" resultClass="int">
+		SELECT 	1
+	  	  FROM  eos_emp_new
+	  	 WHERE  emp_no = #empNo#
+	  	 LIMIT  1
+	</select>
+	
+	<select id="existEmployer" resultClass="int">
+		SELECT 	1
+	  	  FROM  eos_emp_new
+	  	 WHERE  emp_no = #empNo#
+	  	 		<isNotEmpty prepend="and" property="empId">
+	  	 		emp_id != #empId#
+	  	 		</isNotEmpty>
+	  	 LIMIT  1
+	</select>
+	
+	<select id="existOtherUser" resultClass="int">
+		SELECT 	1
+	  	  FROM  eos_user_new
+	  	 WHERE  1 = 1
+	  	 		<isNotEmpty prepend="and" property="userNo">
+	  	 		user_no = #userNo#
+	  	 		</isNotEmpty>
+	  	 		<isNotEmpty prepend="and" property="userId">
+	  	 		user_id != #userId#
+	  	 		</isNotEmpty>
+	  	 LIMIT  1
+	</select>
+	
+	<update id="updateUser">
+		UPDATE  eos_user_new
+		   SET  USER_ID 		= #userId#,
+		   		USER_NAME 		= #userName#,
+		   		USER_NO 		= #userNo#,
+				USER_KIND 		= #userKind#,
+				LOCATION_ID 	= #locationId#,
+				ADDRESS 		= #address#,
+				CONTACT_NAME 	= #contactName#,
+				TEL_NO 			= #telNo#,
+				MOBILE_NO 		= #mobileNo#,
+				CHELP			= #chelp#,
+				UPDATE_DATE 	= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				UPDATE_BY 		= #updateBy#
+		 WHERE 	USER_ID = #userId#
+	</update>
+	
+	<update id="changePassword">
+		UPDATE  eos_emp_new
+		   SET  PWD 			= #pwd#,
+				UPDATE_DATE 	= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				UPDATE_BY 		= #updateBy#
+		 WHERE 
+				EMP_ID = #empId#
+	</update>
+		
+	<update id="updateEmployer">
+		UPDATE  eos_emp_new
+		   SET  
+		   		USER_ID 		= #userId#,
+				DEPT_ID 		= #deptId# , 
+				EMP_NO 			= #empNo# , 
+				EMP_NAME 		= #empName# , 
+				<isNotEmpty property="pwd">
+				PWD 			= #pwd# , 
+				</isNotEmpty>
+				TEL_NO 			= #telNo#,
+				MOBILE_NO 		= #mobileNo#,
+				QQ_NO 			= #qqNo# , 
+				FAX_NO 			= #faxNo# , 
+				EMAIL_ADDR 		= #emailAddr# , 
+				EMP_ROLE 		= #empRole# , 
+				STATE 			= #state# , 
+				<!-- PRNNAME 		= #prnName# ,  -->
+				CHELP 			= #chelp# , 
+				<!-- FIRSTMARK = #FIRSTMARK# , --> 
+				<!-- POSPRN = #POSPRN# , 
+				WXNAME = #WXNAME# , 
+				WXID = #WXID# , 
+				WXIMG = #WXIMG# ,  -->
+				UPDATE_DATE 	= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+				UPDATE_BY 		= #updateBy#,
+				CHELP			= #empChelp#
+		 WHERE 	EMP_ID = #empId#
+	</update>
+	
+		
+	<insert id="insertUser">
+		INSERT INTO eos_user_new
+			(	USER_ID, USER_NO, USER_NAME, USER_KIND, LOCATION_ID, ADDRESS, CONTACT_NAME, TEL_NO, MOBILE_NO, TOPIC1, WEB_NAME, MAIN_COLOR, 
+				BK_COLOR, CLERK_NO, CHELP, CREATE_DATE, CREATE_BY,UPDATE_DATE, UPDATE_BY
+			)
+		VALUES 
+			(	#userId#, #userNo#, #userName#, #userKind#, #locationId#, #userAddr#, #contactName#, #telNo#, #mobileNo#, #userName#, 
+				#userName#, #userMColor#, #userBKColor#, #clerkNo#, #chelp#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #empId#,DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #empId#)
+	</insert>
+	
+	<insert id="insertDept">
+		INSERT INTO eos_dept_new
+			(DEPT_ID, USER_ID, DEPT_NO, DEPT_NAME, UPPER_DEPT_ID, ACCOUNT_YN, STATE, CREATE_DATE, CREATE_BY,UPDATE_DATE, UPDATE_BY)
+		VALUES 
+			(#deptId#, #userId#, #deptNo#, #deptName#, #upperDeptId#, #accountYn#, #state#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#)
+	</insert>
+	
+	<insert id="insertEmployer">
+		INSERT INTO eos_emp_new
+			(EMP_ID, USER_ID, DEPT_ID, EMP_NO, EMP_NAME, PWD, TEL_NO, MOBILE_NO, QQ_NO, EMAIL_ADDR, EMP_ROLE, STATE, FIRSTMARK, CHELP, CREATE_DATE, CREATE_BY, UPDATE_DATE, UPDATE_BY)
+		VALUES 
+			(#empId#, #userId#, #deptId#, #empNo#, #empName#, #pwd#, #telNo#, #mobileNo#, #qqNo#, #emailAddr#, #empRole#, #state#, #firstMark#, #empChelp#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#)
+	</insert>
+	
+	<insert id="insertCustType">
+		INSERT INTO eos_custtype_new
+			(CUSTTYPE_ID, USER_ID, CUSTTYPE_NAME, NOTE, PSQL, STATE, CREATE_DATE, CREATE_BY, UPDATE_DATE, UPDATE_BY)
+		VALUES 
+			(#custtypeId#, #userId#, #custtypeName#, #note#, #psql#, #state#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#)
+	</insert>
+	
+	<insert id="insertStore">
+		INSERT INTO eos_store_new
+			(STORE_ID, USER_ID, DEPT_ID, STORE_NO, STORE_NAME, NOTE, STATE, CREATE_DATE, CREATE_BY, UPDATE_DATE, UPDATE_BY)
+		VALUES 
+			(#storeId#, #userId#, #deptId#, #storeNo#, #storeName#, #note#, #state#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#)
+	</insert>
+	
+	<insert id="insertDAddr">
+		INSERT INTO eos_delivery_addr_new
+			(ADDR_ID, USER_ID, LOCATION_ID, ADDRESS, CONTACT_NAME, TEL_NO, MOBILE_NO, DEFAULT_YN, NOTE, STATE, MAP, CREATE_DATE, CREATE_BY, UPDATE_DATE, UPDATE_BY)
+		VALUES 
+			(#addrId#, #userId#, #locationId#, #address#, #contactName#, #telNo#, #mobileNo#, #defaultYN#, #note#, #state#, #map#, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#)
+	</insert>
+	
+	<select id="checkClekrNo" resultClass="Integer">
+		SELECT 1
+		  FROM eos_emp_new
+		 WHERE user_id = #hostId#
+		   AND emp_no = #clerkNo#
+	</select>
+	
+	<update id="updateMasterEmpName">
+		UPDATE  eos_emp_new
+		   SET  emp_name 	= #contactName#,
+		   		emp_no		= #userNo#,
+		   		tel_no   	= #telNo#,
+		   		mobile_no 	= #mobileNo#,
+		   		chelp		= #empChelp#
+		 WHERE  user_id = #userId# AND firstmark = 'Y'
+	</update>
+</sqlMap>

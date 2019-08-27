@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="menu">
+
+	<typeAlias alias="menu" type="com.kpc.eos.model.system.MenuModel" />
+	<typeAlias alias="actionurl" type="com.kpc.eos.model.system.ActionUrlModel" />
+
+	<select id="findMenuList" resultClass="menu">
+		SELECT  menu_id 		AS menuId, 
+		        menu_name 		AS menuName,
+			    note 			AS menuDesc, 
+				sort_no 		AS sortNo, 
+				IFNULL((SELECT sort_no FROM eos_menu_new WHERE menu_id = A.upper_menu_id), A.sort_no) upperSortNo,
+				upper_menu_id 	AS upperMenuId,
+				IFNULL((SELECT menu_name FROM eos_menu_new WHERE menu_id = A.upper_menu_id), A.menu_name)  upperMenuName,
+				menu_url 		AS connUrl, 
+				state 			AS state,
+				menu_level		AS LEVEL,
+				IF(menu_level=2, 'true', 'false') AS isLeaf,
+				'true' AS expanded,
+				menu_icon		AS menuIcon,
+				mobile_yn		AS mobileYn
+		 FROM	eos_menu_new A
+		 WHERE	1=1 
+		 ORDER BY 5,6,4
+	</select>
+	
+	<select id="getMenu" resultClass="menu">
+		SELECT	menu_id 		AS menuId, 
+				menu_name 		AS menuName, 
+				note 			AS menuDesc, 
+				sort_no 		AS sortNo, 
+				upper_menu_id AS upperMenuId, 
+				(SELECT Y.menu_name AS menuName FROM eos_menu_new Y WHERE Y.menu_id = A.upper_menu_id) AS upperMenuName,
+				'' AS menuLocation,
+				menu_url 		AS connUrl, 
+				state 			AS state,
+				menu_icon		AS menuIcon,
+				mobile_yn		AS mobileYn				
+		  FROM eos_menu_new A
+		 WHERE menu_id = #value#
+	</select>
+	
+	<update id="updateMenu">
+		<isNotEmpty property="menuId">
+			UPDATE 	eos_menu_new
+			   SET 	menu_name 		= #menuName#,
+			   		note   			= #menuDesc#,
+			   		sort_no 		= #sortNo#,
+			   		upper_menu_id 	= IF(#upperMenuId#= '', NULL, #upperMenuId#),
+			   		menu_url		= #connUrl#,
+			   		state			= #state#,
+			   		menu_icon		= #menuIcon#,
+			   		mobile_yn		= #mobileYn#
+			 WHERE	menu_id 		= #menuId#		
+		</isNotEmpty>	
+		<isEmpty property="menuId">
+			UPDATE 	eos_menu_new
+			   SET 	menu_name 		= #menuName#,
+			   		state			= #state#,
+			   		mobile_yn		= #mobileYn#
+			 WHERE	menu_id 		= #id#		
+		</isEmpty>			
+
+	</update>	
+	
+	<select id="checkHasUnderMenus" resultClass="Integer">
+		SELECT COUNT(*)
+		FROM eos_menu_new 
+		WHERE upper_menu_id = #value#
+		  AND state = 'ST0001'
+	</select>
+	
+	<select id="getUpperMenuList" resultClass="java.util.HashMap">
+		SELECT menu_id 		upperMenuId, 
+		       menu_name	upperMenuName
+		  FROM eos_menu_new 
+		WHERE  menu_level = 1
+	</select>	
+	
+	<update id="deleteMenu">
+		UPDATE	eos_menu_new
+		   SET	state				= 'ST0002'
+		 WHERE	menu_id = #menuId#
+	</update>
+	
+	<select id="hasAuthorityOfAction" resultClass="int">
+		SELECT COUNT(*)
+		  FROM eos_right_new A, eos_menu_new B
+		 WHERE A.menu_id = #actionId#
+		   AND A.menu_id = B.menu_id
+		   AND B.state = 'ST0001'
+		   AND A.EMP_ID = #adminId#
+	</select>
+	
+	<select id="hasAuthorityOfUrlByEmp" resultClass="string">
+		SELECT aa.menu_Id
+		  FROM (
+				(SELECT A.menu_id
+				  FROM eos_right_new A, eos_menu_new B
+				 WHERE B.menu_url = #actionUrl#
+				   AND A.menu_id = B.menu_id
+				   AND B.state = 'ST0001'
+				   AND A.EMP_ID = #empId# )
+				   UNION 	
+				(SELECT A.menu_id
+				  FROM eos_right_new A, eos_menu_new B, eos_menu_urls_new C
+				 WHERE A.menu_id = B.menu_id
+				   AND B.state = 'ST0001'	
+				   AND A.EMP_ID = #empId#
+				   AND A.MENU_ID = C.MENU_ID
+				   AND C.state = 'ST0001'
+				   AND C.MENU_ACTION_URL = #actionUrl# )
+				   
+				   UNION
+				   
+				(SELECT 'MENU00000000000' menu_id
+				  FROM eos_menu_new B, eos_menu_urls_new C
+				 WHERE B.MENU_ID = C.MENU_ID
+				   AND C.state = 'ST0001'
+				   AND C.MENU_ACTION_URL = #actionUrl#
+				   AND B.menu_id = 'MENU00000000000' )			   
+			   ) aa	
+		 LIMIT 1
+	</select>	
+	
+	<select id="hasAuthorityOfUrlByUser" resultClass="string">
+		SELECT aa.menu_Id
+		  FROM (
+				(SELECT A.MENU_ID
+				  FROM eos_menu_set_new A, eos_menu_new B
+				 WHERE B.menu_url = #actionUrl#
+				   AND A.menu_id = B.menu_id
+				   AND B.state = 'ST0001'
+				   AND A.state = 'ST0001'
+				   AND A.user_id = #userId# )
+				  
+				   UNION 	
+				
+				(SELECT A.menu_id
+				  FROM eos_menu_set_new A, eos_menu_new B, eos_menu_urls_new C
+				 WHERE A.menu_id = B.menu_id
+				   AND B.state = 'ST0001'
+				   AND A.state = 'ST0001'		   
+				   AND A.user_id = #userId#
+				   AND A.MENU_ID = C.MENU_ID
+				   AND C.state = 'ST0001'
+				   AND C.MENU_ACTION_URL = #actionUrl# )
+				   
+				   UNION
+				   
+				(SELECT 'MENU00000000000' menu_id
+				  FROM eos_menu_new B, eos_menu_urls_new C
+				 WHERE B.MENU_ID = C.MENU_ID
+				   AND C.state = 'ST0001'
+				   AND C.MENU_ACTION_URL = #actionUrl#
+				   AND B.menu_id = 'MENU00000000000' )
+			   ) aa
+	     LIMIT 1
+	</select>		
+			
+	
+	<insert id="insertUserMenu">
+		INSERT INTO eos_menu_set_new
+			(USER_ID, MENU_ID, MENU_USER_NAME, STATE)
+			SELECT #userId# AS USER_ID, m.MENU_ID, m.MENU_NAME, #state# AS STATE 
+			  FROM eos_userkind_menu_new a, eos_menu_new m
+			 WHERE a.user_kind = #userKind#
+			   AND a.menu_id = m.MENU_ID
+			   AND m.STATE = 'ST0001'
+	</insert>
+	
+	<delete id="deleteUserMenu">
+		DELETE  FROM eos_menu_set_new WHERE user_id = #userId#
+	</delete>
+	
+	<select id="findAccessibleMenuList" resultClass="menu">
+		  SELECT   M.MENU_ID 		as menuId, 
+		  		   S.MENU_USER_NAME as menuName,
+		           M.UPPER_MENU_ID 	as UpperMenuId,
+		           M.MENU_URL   	as connUrl,
+		           M.MENU_ICON		as menuIcon,
+		           M.mobile_yn		as mobileYn
+		    FROM   EOS_MENU_NEW M
+		    JOIN   EOS_RIGHT_NEW R ON M.MENU_ID = R.MENU_ID
+		    JOIN   EOS_MENU_SET_NEW S ON S.MENU_ID = M.MENU_ID AND S.USER_ID = #userId#
+		   WHERE   R.EMP_ID = #empId#
+		     AND   S.state = 'ST0001'
+		     AND   M.state = 'ST0001'
+		   		<isEqual prepend="and" property="isMobile" compareValue="true">	 
+						M.mobile_yn = 'Y'
+				</isEqual>
+		ORDER BY   M.UPPER_MENU_ID, M.SORT_NO
+	</select>
+	
+	<select id="findUserAccessibleMenuList" resultClass="menu">
+		  SELECT   M.MENU_ID 		AS menuId, 
+		  		   S.MENU_USER_NAME AS menuName,
+		           M.UPPER_MENU_ID 	AS upperMenuId,
+		           M.MENU_URL   	AS connUrl,
+		           M.MENU_ICON		as menuIcon,
+		           M.mobile_yn		as mobileYn,
+		           M.sort_no		as sortNo		           
+		    FROM   EOS_MENU_NEW M
+		    JOIN   EOS_MENU_SET_NEW S ON M.MENU_ID = S.MENU_ID
+		   WHERE   S.USER_ID = #userId#
+		     AND   S.state = 'ST0001'	
+		     AND   M.state = 'ST0001'		
+		   		<isEqual prepend="and" property="isMobile" compareValue="true">	 
+						M.mobile_yn = 'Y'
+				</isEqual>
+	   	   UNION
+		  SELECT   M.MENU_ID 		AS menuId, 
+		  		   S.MENU_USER_NAME AS menuName,
+		           M.UPPER_MENU_ID 	AS upperMenuId,
+		           M.MENU_URL   	AS connUrl,
+		           M.MENU_ICON		as menuIcon,
+		           M.mobile_yn		as mobileYn,
+		           M.sort_no		as sortNo		           
+		    FROM   EOS_MENU_NEW M
+		    JOIN   EOS_MENU_SET_NEW S ON M.MENU_ID = S.MENU_ID
+		   WHERE   S.USER_ID = #userId#
+		     AND   M.MENU_ID = 'MENU00000000029'		          	   
+		ORDER BY   upperMenuId, sortNo
+	</select>
+	
+	<select id="getMenuSetListByUser" resultClass="menu">
+		SELECT  C.menu_id			AS menuId,
+				B.MENU_LEVEL 		AS LEVEL,
+				B.MENU_NAME			AS menuName,
+				B.SORT_NO			AS sortNo,
+				IFNULL((SELECT sort_no FROM eos_menu_new WHERE menu_id = B.upper_menu_id), B.sort_no) upperSortNo,
+				B.UPPER_MENU_ID     AS upperMenuId,
+				IFNULL((SELECT menu_name FROM eos_menu_new WHERE menu_id = B.upper_menu_id), B.MENU_NAME) upperMenuName,
+				IFNULL(A.menu_user_name, B.menu_name)	AS menuUserName,
+			 	IF(A.state = 'ST0001', 'YES','NO')  	AS state,
+			<!-- 	IFNULL(A.state, 'ST0002')  			 	AS state, -->
+				IF(MENU_LEVEL=2, 'true', 'false') 		AS isLeaf,
+				'true' 									AS expanded,
+				A.MENU_ID								AS seqNo
+		  FROM  eos_menu_set_new A RIGHT OUTER JOIN eos_userkind_menu_new C 
+					ON A.menu_id = C.menu_id AND A.user_id = #userId#,
+			    eos_menu_new B	    
+		 WHERE  C.menu_id = B.menu_id 
+		   AND  B.STATE = 'ST0001'	    
+		   AND  C.user_kind = #userKind#
+		 ORDER BY 5,6,4
+	</select>
+	
+	<insert id="insertMenuSet">
+		INSERT INTO eos_menu_set_new
+			(USER_ID, MENU_ID, MENU_USER_NAME, STATE)
+			VALUES
+			(#userId#, #menuId#, #menuUserName#, IF(#state#="YES", "ST0001", "ST0002"))
+	</insert>
+	
+	<update id="updateMenuSet">
+		UPDATE  eos_menu_set_new
+		   SET  menu_user_name 	= #menuUserName#,
+		        state 			= IF(#state#="YES", "ST0001", "ST0002")
+		 WHERE  user_id = #userId#
+		   AND  menu_id = #menuId#	
+	</update>
+	
+	<delete id="deleteMenuSet">
+		DELETE FROM eos_menu_set_new WHERE user_id = #userId# AND  menu_id = #menuId#
+	</delete>
+	
+	<select id="findActionUrlList" resultClass="actionurl">
+		SELECT 	a.id 				id,
+				a.menu_id 			menuId,
+				(SELECT menu_name FROM eos_menu_new WHERE menu_id = a.menu_id) menuName,
+				a.menu_action_url 	menuActionUrl,
+				a.description		urlDesc,
+				a.state				state
+		  FROM 	eos_menu_urls_new a
+		 WHERE 	a.menu_id = #menuId#	
+	</select>
+	
+	<select id="getActionMenuList" resultClass="menu">
+		SELECT  menu_id 		AS menuId, 
+		        menu_name 		AS menuName,
+			    note 			AS menuDesc, 
+				sort_no 		AS sortNo, 
+				IFNULL((SELECT sort_no FROM eos_menu_new WHERE menu_id = A.upper_menu_id), A.sort_no) upperSortNo,
+				upper_menu_id 	AS upperMenuId,
+				(SELECT menu_name FROM eos_menu_new WHERE menu_id = A.upper_menu_id) upperMenuName,
+				menu_url 		AS connUrl, 
+				state 			AS state,
+				menu_level		AS level,
+				menu_icon		AS menuIcon,
+				mobile_yn		AS mobileYn
+		 FROM	eos_menu_new A
+		 WHERE	upper_menu_id IS NOT NULL
+		   AND  state = 'ST0001'
+		 ORDER BY 5,6,4	
+	</select>
+	
+	<insert id="insertActionUrls">
+		INSERT INTO eos_menu_urls_new
+		(
+			MENU_ID,
+			MENU_ACTION_URL,
+			description,
+			STATE
+		)
+		VALUES
+		(
+			#menuId#,
+			#menuActionUrl#,
+			#urlDesc#,
+			#state#
+		)	
+	</insert>
+	
+	<update id="updateActionUrls">
+		UPDATE  eos_menu_urls_new 
+		   SET  
+				MENU_ACTION_URL		 = #menuActionUrl#,
+				description			 = #urlDesc#,
+				STATE				 = #state#
+		 WHERE  
+				ID					 = #id#
+	</update>
+	
+	<insert id="insertActionUrlForLogging">
+		<selectKey resultClass="string" keyProperty="actionUrlok">
+			SELECT menu_action_url FROM eos_menu_urls_new WHERE menu_action_url = #actionUrl# AND state = 'ST0001' LIMIT 1
+		</selectKey>
+		
+		INSERT INTO eos_menu_urls_new
+		(
+			MENU_ID,
+			MENU_ACTION_URL,
+			STATE
+		)
+		SELECT
+			(SELECT MAX(id) FROM eos_menu_urls_new) menuId,
+			#actionUrl#,
+			'ST0001'
+		<isNotEmpty property="actionUrlok">
+		  FROM  eos_menu_urls_new		
+		 WHERE  id = 0	
+		</isNotEmpty>	
+				
+	</insert>	
+
+</sqlMap>

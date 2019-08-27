@@ -1,0 +1,72 @@
+<%@page import="com.kpc.eos.core.Constants"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<meta http-equiv="Content-Type" 	content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="shortcut icon" href="<c:url value="/images/favicon.ico"/>" />
+
+	<link href="<c:url value="/css/bootstrap.min.css"/>" rel="stylesheet" type="text/css" />
+	<link href="<c:url value="/css/bootstrap-fileinput.css"/>" rel="stylesheet" type="text/css" />
+	<link href="<c:url value="/js/lib/plugins/bootstrap-toastr/toastr.min.css"/>" rel="stylesheet" type="text/css" />
+	<link href="<c:url value="/js/lib/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css"/>" rel="stylesheet" type="text/css" />
+	<link href="<c:url value="/js/lib/plugins/bootstrap-daterangepicker/daterangepicker-bs3.css"/>" rel="stylesheet" type="text/css" />
+	<link href="<c:url value="/css/font-awesome.min.css"/>" rel="stylesheet" type="text/css" />	
+	
+	<link href="<c:url value="/js/lib/jquery/timeentry/jquery.timeentry.css"/>" rel="stylesheet" type="text/css" />
+		
+    <!-- for jqgrid mobile -->
+    <link href="<c:url value="/css/mobile/jqGridMobile/default/jquery.mobile.css"/>" rel="stylesheet" type="text/css" />
+    <link href="<c:url value="/css/mobile/jqGridMobile/ui.jqgrid-mobile.css"/>" rel="stylesheet" type="text/css" />
+    
+    <link href="<c:url value="/css/mobile/jqGridMobile/shCore.css"/>" rel="stylesheet" type="text/css" />
+    <link href="<c:url value="/css/mobile/jqGridMobile/shThemeDefault.css"/>" rel="stylesheet" type="text/css" /> 
+    
+    <link href="<c:url value="/css/plugins/fancybox/jquery.fancybox.css"/>" rel="stylesheet" type="text/css" />
+    
+	<link href="<c:url value="/css/mobile/common_mo.css"/>" rel="stylesheet" type="text/css" />
+
+
+<script type="text/javascript">
+var _contextPath    = "<%= request.getContextPath() %>";
+var _milliseconds	= <%= (Long) request.getAttribute("SYSTEM_MILLISECONDS") %>;
+var imageServerUrl = "<%= Constants.IMAGE_SERVER_URL %>";
+</script>
+
+    <script src="<c:url value="/js/lib/jquery/jqGridMobile/jquery.min.js"/>"></script>
+	<script src="<c:url value="/js/lib/jquery/jqGridMobile/jquerymobile.jqGrid.min.js"/>" language="javascript"></script>
+	<script src="<c:url value="/js/lib/jquery/jqGridMobile/i18n/grid.locale-cn.js"/>" language="javascript"></script>
+	<script src="<c:url value="/js/lib/jquery/jqGridMobile/jquery.mobile.js"/>"></script>
+	
+	<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery.cookie.js"/>"></script>
+	
+	<%-- validation js --%>
+	<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/jquery.validate.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/jquery.metadata.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/jquery/validation/messages_zh.js"/>"></script>	
+
+		
+	<!-- color js -->
+	<script type="text/javascript" src="<c:url value="/js/lib/plugins/color/jscolor.js"/>"></script>
+	
+	
+	<script type="text/javascript" src="/js/lib/plugins/bootstrap/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/js/lib/plugins/bootstrap/bootstrap-fileinput.js"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootbox/bootbox.min.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-toastr/toastr.min.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/plugins/jquery.blockui.min.js"/>"></script>
+	
+	<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/plugins/bootstrap-daterangepicker/daterangepicker.js"/>"></script>
+
+	<script type="text/javascript" src="<c:url value="/js/common/address_mo.js"/>"></script>
+	<script src="<c:url value="/js/mobile/common/common_mo.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/backoffice/boCommon.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/mobile/common/commonGrid_mo.js"/>"></script>
+	
+	<script type="text/javascript" src="<c:url value="/js/common/custom.jquery.plugin.js"/>"></script>
+	<script type="text/javascript" src="<c:url value="/js/lib/jquery/form/jquery.form.js"/>"></script>		
+	
+	<script type="text/javascript" src="<c:url value="/js/lib/jquery/jquery.fancybox.pack.js"/>"></script>
+	

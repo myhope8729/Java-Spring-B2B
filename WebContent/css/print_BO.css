@@ -1,0 +1,75 @@
+@charset "utf-8";
+
+body,input,textarea {font-family:tahoma,'\5fae\8f6f\96c5\9ed1',simsun;font-size:15px;color:#333;}
+
+
+h3.page_title {
+	padding-bottom: 30px;
+	padding-top:30px;
+	text-align: center;
+	font-weight: bold;
+	margin:5px 0 0;
+	font-family:宋体;
+	font-size:24px;
+}
+
+table.table-nobordered tr td, table.table-nobordered tr th{
+	text-align: left;
+    vertical-align: middle;
+    color: #000000;
+    font-size: 15pt;
+    font-family:宋体;
+    background: #ffffff;
+    font-weight: bold;
+    border:none;
+    height:40px;
+}
+
+table.table-bordered tr td, table.table-bordered tr th{
+	text-align: left;
+    vertical-align: middle;
+    color: #000000;
+    font-size: 13pt;
+    font-family:宋体;
+    background: #ffffff;
+    border:1px solid black;
+}
+table.ui-jqgrid-htable{padding:0 30px;}
+table.dataTable01{
+	padding: 10px 30px 10px 30px;
+	border-collapse:collapse;
+}
+
+@media print {
+	table.dataTable01 tr td, table.dataTable01 tr th{
+	    font-size: 10pt;
+	    font-family:宋体;
+	}
+}
+@media all {
+	div.bs-group {
+		width: 950px; 
+		margin: 0 auto; 
+		padding-top: 40px; 
+		min-height: 400px;
+		padding-left: 5px;
+		font-family: 微软雅黑;
+		font-size: 12pt;
+	}
+	div.bs-group table.dataTable01 {
+		padding: 10px 0px 10px 0px;
+		border-collapse: collapse;
+		
+	}
+	div.bs-group table.dataTable01 td, div.bs-group table.dataTable01 th{
+		border: 1px solid #e0e0e0;
+		padding-left: 4px;
+		padding-right: 4px;
+		padding-top: 4px;
+		padding-bottom: 4px;
+		font-weight: normal;
+	}
+	
+	div.bs-group > label{display: block;}
+	div.bs-group > label:FIRST-CHILD{margin-bottom: 5px;}
+}

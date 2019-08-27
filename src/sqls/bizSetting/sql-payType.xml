@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="payType">
+
+	<typeAlias alias="payType" type="com.kpc.eos.model.bizSetting.PayTypeModel" />
+	
+	<typeAlias alias="subPayType" type="com.kpc.eos.model.bill.SubPayTypeModel" />
+	
+	<select id="getPayTypeList" resultClass="payType">
+		SELECT 	paytype_id							AS payTypeId,
+		 		paytype_name						AS payTypeName,
+				prepay_yn							AS prePayYn,
+				priv_yn								AS privYn,
+				weixin_yn							AS weixinYn,
+				note								AS note,
+				state								AS state
+		 FROM  eos_paytype_new
+		WHERE  user_id = #userId#
+	 ORDER BY  $page.sidx$ $page.sord$
+		 LIMIT #page.startRow#, #page.rows#
+	</select>
+	
+	<select id="getTotalCountPayType" resultClass="Integer">
+		SELECT  COUNT(*) AS cnt
+		  FROM  eos_paytype_new
+		 WHERE  user_id = #userId#
+	</select>
+	
+	<select id="getAvailblePayTypeList" resultClass="payType">
+		SELECT 	paytype_id							AS payTypeId,
+		 		paytype_name						AS payTypeName,
+				prepay_yn							AS prePayYn,
+				priv_yn								AS privYn,
+				weixin_yn							AS weixinYn,
+				note								AS note,
+				state								AS state
+		 FROM  eos_paytype_new
+		WHERE  user_id = #userId#
+		  AND  state = 'ST0001'
+	</select>
+	
+	<!-- Used in BUYER's orderForm  -->
+	<select id="getUserPayTypeList" resultClass="payType">
+		SELECT 	paytype_id							AS payTypeId,
+		 		paytype_name						AS payTypeName,
+				prepay_yn							AS prePayYn,
+				priv_yn								AS privYn,
+				weixin_yn							AS weixinYn,
+				note								AS note
+		  FROM  eos_paytype_new
+		 WHERE  user_id 	= #userId# 
+			    <isNotEmpty prepend="and" property="state">
+					state 	= #state# 
+				</isNotEmpty>
+			    <isNotEmpty prepend="and" property="privYn">
+					priv_yn = #privYn#
+				</isNotEmpty>
+	 UNION 
+		SELECT 	b.paytype_id						AS payTypeId,
+		 		b.paytype_name						AS payTypeName,
+				b.prepay_yn							AS prePayYn,
+				b.priv_yn							AS privYn,
+				weixin_yn							AS weixinYn,
+				b.note								AS note
+		  FROM  eos_custpaytype_new a, eos_paytype_new b
+		 WHERE  a.host_id 	= 	#userId#
+		 		AND a.cust_id = #custUserId#
+		 		AND a.paytype_id = b.paytype_id
+		 		<isNotEmpty prepend="and" property="state">
+					b.state 	= #state# 
+				</isNotEmpty>
+	</select>
+	
+	<!-- Used in payment controller -->
+	<select id="getUserPrePayTypeList" resultClass="payType">
+		SELECT  pt.paytype_id		AS payTypeId,
+		 		pt.paytype_name		AS payTypeName,
+		 		CONCAT(pt.paytype_name,  ' (', IF(c1 IS NULL, CONCAT( c4, ' 送  ', c5, ')'), c1)  ,')')	AS payTypeNameDetail,
+				pt.prepay_yn		AS prePayYn,
+				pt.priv_yn			AS privYn,
+				pt.weixin_yn		AS weixinYn,
+				pt.note				AS note,
+				pd.c1			  	AS c1,
+				pd.c2			  	AS c2,
+				pd.c3			  	AS c3,
+				pd.c4			  	AS c4,
+				pd.c5			  	AS c5,
+				pd.seq_no			AS seqNo
+		  FROM  eos_hostcust_new hc,
+				eos_custpaytype_new cp
+	 LEFT JOIN  eos_pdat_line_new pd ON 
+					pd.USER_ID = cp.host_id AND pd.CODE_ID = 'BD0013',
+				eos_paytype_new pt
+		 WHERE  hc.host_id = cp.host_id
+				AND hc.cust_id = cp.cust_id
+		 		AND hc.host_id = #userId# 
+		 		<isNotEmpty prepend="and" property="custUserId">
+		 		hc.cust_id = #custUserId# 
+		 		</isNotEmpty>
+				AND cp.paytype_id = pt.paytype_id
+				AND pt.prepay_yn = 'Y'
+				AND hc.custtype_id = pd.c2	<!-- cust type -->
+				AND pt.paytype_id = pd.c3  
+				AND hc.state='ST0001'
+				AND pt.state='ST0001'
+				<isNotEmpty prepend="and" property="custtypeId">
+					hc.custtype_id 	= #custtypeId#
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="paytypeId">
+					pt.paytype_id 	= #paytypeId#
+				</isNotEmpty>
+			<isNotEmpty prepend="" property="isGroup">
+	  GROUP BY  pt.paytype_id
+			</isNotEmpty>
+	</select>
+	
+	
+	
+	<!-- 
+	Used on bizdata setting page.
+	 -->
+	<select id="getUserPrePayTypeForUserList" resultClass="payType">
+		SELECT  pt.paytype_id   	AS payTypeId,
+				pt.paytype_name 	AS payTypeName
+		  FROM  eos_hostcust_new 	hc,
+				eos_custpaytype_new cp,
+				eos_paytype_new 	pt
+		 WHERE  hc.host_id = cp.host_id
+				AND hc.cust_id = cp.cust_id
+		 		AND hc.host_id = #userId# 
+		 		<isNotEmpty prepend="and" property="custUserId">
+		 		AND hc.cust_id = #custUserId# 
+		 		</isNotEmpty>
+				AND cp.paytype_id = pt.paytype_id
+				AND pt.prepay_yn = 'Y'
+				AND hc.state='ST0001'
+				AND pt.state='ST0001'
+				<isNotEmpty prepend="and" property="custtypeId">
+					hc.custtype_id 	= #custtypeId#
+				</isNotEmpty>
+				<isNotEmpty prepend="and" property="paytypeId">
+					pt.paytype_id 	= #paytypeId#
+				</isNotEmpty>
+			<isNotEmpty prepend="" property="isGroup">
+	  GROUP BY  pt.paytype_id
+			</isNotEmpty>
+	</select>
+	
+	<!-- 
+	Get the prepay type list here.
+	Used in orderForm & saleForm.
+	 -->
+	<select id="getActiveUserSubPayTypeList" resultClass="subPayType">
+		SELECT  pd.c1					AS name,
+				pd.c2					AS custtypeId,
+				pd.c3					AS paytypeId,
+				pd.c4					AS topupAmt,
+				pd.c5					AS bonusAmt,
+				pd.seq_no				AS seqNo
+		  FROM  eos_pdat_line_new 		AS pd
+		 WHERE  pd.user_id = #userId#
+		   AND  pd.code_id = 'BD0013'
+		   AND  pd.state = 'ST0001'
+		   		<isNotEmpty prepend="and" property="custtypeId">
+					pd.c2 = #custtypeId# 
+				</isNotEmpty>
+		   		<isNotEmpty prepend="and" property="custtypeId">
+					pd.c3 = #paytypeId# 
+				</isNotEmpty>
+		   		<isNotEmpty prepend="and" property="seqNo">
+					pd.seq_no = #seqNo# 
+				</isNotEmpty>
+	</select>
+		
+	<!-- 
+	Used when saving a payment bill.
+	 -->
+	<select id="getActiveUserSubPayType" resultClass="subPayType">
+		SELECT  pd.c1					AS name,
+				pd.c2					AS custtypeId,
+				pd.c3					AS paytypeId,
+				pd.c4					AS topupAmt,
+				pd.c5					AS bonusAmt,
+				pd.seq_no				AS seqNo
+		  FROM  eos_pdat_line_new 		AS pd
+		 WHERE  pd.user_id = #userId#
+		   AND  pd.code_id = 'BD0013'
+		   AND  pd.state = 'ST0001'
+		   		<isNotEmpty prepend="and" property="custtypeId">
+					pd.c2 = #custtypeId# 
+				</isNotEmpty>
+		   		<isNotEmpty prepend="and" property="custtypeId">
+					pd.c3 = #paytypeId# 
+				</isNotEmpty>
+		   		<isNotEmpty prepend="and" property="seqNo">
+					pd.seq_no = #seqNo# 
+				</isNotEmpty>
+		 LIMIT  0, 1
+	</select>
+		
+	<select id="getPaytype" resultClass="payType">
+		SELECT  paytype_id 							AS payTypeId,
+				user_id								AS userId,
+				paytype_name						AS payTypeName,
+				prepay_yn							AS prePayYn,
+				priv_yn								AS privYn,
+				weixin_yn							AS weixinYn,
+				note								AS note,
+				state								AS state
+		  FROM  eos_paytype_new
+		 WHERE  paytype_id  = #payTypeId#
+	</select>
+	
+	<update id="updatePayType">
+		UPDATE  eos_paytype_new
+		   SET  paytype_name 		= #payTypeName#,
+		   		prepay_yn			= #prePayYn#,
+		   		priv_yn				= #privYn#,
+		   		weixin_yn			= #weixinYn#,
+		   		note				= #note#,
+		   		state				= #state#,
+		   		update_date			= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by			= #updateBy#
+		 WHERE  paytype_id			= #payTypeId#
+		   AND  user_id				= #userId#
+	</update>
+	
+	<insert id="insertPayType">
+		INSERT INTO  eos_paytype_new
+				 (
+					 	paytype_id,		user_id,			paytype_name,	 	prepay_yn,				weixin_yn,
+					 	priv_yn,		note,				state,			 	create_date,
+					 	create_by,		update_date,		update_by
+				 )
+			 VALUES  
+			 	(
+			 			get_tbl_next_id_value('eos_paytype_new'),
+			 			#userId#,		#payTypeName#,		#prePayYn#,			#weixinYn#,
+			 			#privYn#,		#note#,				#state#,
+			 			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,
+			 			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #updateBy#
+			 	)
+	</insert>
+	
+	<select id="checkExistPayType" resultClass="Integer">
+		SELECT  DISTINCT 1
+		  FROM  eos_paytype_new
+		 WHERE  user_id = #userId#
+		   AND  paytype_name = #payTypeName#
+	   <isNotEmpty property="payTypeId" prepend="AND">
+	   			paytype_id NOT IN (SELECT paytype_id FROM eos_paytype_new WHERE paytype_id = #payTypeId#)
+	   </isNotEmpty>
+	</select>
+</sqlMap>

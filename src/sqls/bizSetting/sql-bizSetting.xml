@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="bizSetting">
+
+	<typeAlias alias="bizSetting" type="com.kpc.eos.model.bizSetting.BizSettingModel" />
+		
+	<select id="getBizSettingList" resultClass="bizSetting">
+		SELECT  a.user_id								AS userId,
+				b.sys_code								AS sysCode,
+				b.sys_type								AS sysType,
+				a.user_sys_value						AS sysValueName,
+				b.sys_name								AS sysName,
+				b.sys_kind_cd							AS sysKindCd,
+				(SELECT  code_name
+				   FROM  eos_code_new
+				  WHERE  code_id = b.sys_kind_cd)		AS sysKindName
+		  FROM  eos_sysdat_new b
+		  LEFT OUTER JOIN eos_userdat_new a ON 
+		  	  (b.sys_code = a.sys_code  
+		  	  	<isNotEmpty prepend="and" property="userId">
+			    	a.user_id = #userId#
+		 		</isNotEmpty>
+		 	   )
+		 WHERE  1 = 1
+		 <isNotEmpty prepend="and" property="sysCode">
+			    b.sys_code = #sysCode#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="sysKindCd">
+			    b.sys_kind_cd = #sysKindCd#
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="chelp">
+			    b.sys_name LIKE CONCAT('%', #chelp#, '%') OR  b.sys_code LIKE CONCAT('%', #chelp#, '%')
+		 </isNotEmpty>
+		 <isNotEmpty property="page.sidx">
+		 	ORDER BY  $page.sidx$ $page.sord$
+		 </isNotEmpty>
+	</select>
+	
+	<select id="getBizSettingDetailList" resultClass="bizSetting">
+		SELECT  sysdat_detail_id		AS sysValue,
+				sys_code				AS sysCode,
+				sys_value				AS sysValueName
+	  	  FROM  eos_sysdat_detail_new
+	</select>
+	
+	
+	<select id="getUserBizSettingList" resultClass="bizSetting">
+		SELECT  b.sys_code								AS sysCode,
+				a.user_sys_value						AS sysValueName,
+				b.sys_name								AS sysName,
+				c.sys_value								AS sysValue
+		  FROM  eos_sysdat_new b
+		  LEFT OUTER JOIN eos_userdat_new a ON b.sys_code = a.sys_code
+		  LEFT OUTER JOIN eos_sysdat_detail_new c ON c.sysdat_detail_id = a.user_sys_value AND a.sys_code = c.sys_code 
+		 WHERE  a.user_id = #userId#
+   		<isNotEmpty prepend="and" property="sysKindCd">
+	    		b.sys_kind_cd = #sysKindCd#
+ 		</isNotEmpty>
+	</select>
+	
+	
+	<delete id="deleteBizSettingByUser">
+		DELETE FROM eos_userdat_new WHERE user_id = #userId#
+	</delete>
+	
+	<insert id="insertBizSetting">
+		INSERT INTO eos_userdat_new
+			(
+				user_id,			sys_code,			user_sys_value
+			)
+		VALUES
+			(
+				#userId#,			#sysCode#,			#sysValue#
+			)
+	</insert>
+</sqlMap>

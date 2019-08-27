@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC 
+	"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN" 
+	"http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+
+<tiles-definitions>
+
+	<!-- 
+        **************************************************
+        * Main Page Layout - Basic
+        **************************************************
+	 -->
+    <definition name=".user" 		template="/WEB-INF/jsp/userPage/layout/userLayout.jsp">        
+    </definition>
+    
+    <definition name=".main" 		template="/WEB-INF/jsp/common/layout/mainLayout.jsp">        
+    </definition>
+    
+    <!-- 
+    	**************************************************
+        * 1-Column Page Layout(Common)
+        **************************************************
+     -->
+    
+    <definition name="common/*" extends=".main">
+    	<put-attribute name="top"		 	value="/WEB-INF/jsp/common/layout/top.jsp" />
+    	<put-attribute name="breadcrumb"	value="" />
+    	<put-attribute name="content"	 	value="/WEB-INF/jsp/common/{1}.jsp" />
+    	<put-attribute name="bottom"	 	value="/WEB-INF/jsp/common/layout/bottom.jsp" />
+    </definition>
+    
+    <!-- 
+    	**************************************************
+        * 1-Column Page Layout(UserPage)
+        **************************************************
+     -->
+     
+    <definition name="userPage/*" extends=".user">
+    	<put-attribute name="top"		 	value="/WEB-INF/jsp/userPage/layout/top.jsp" />    	
+    	<put-attribute name="content"	 	value="/WEB-INF/jsp/userPage/{1}.jsp" />
+    	<put-attribute name="bottom"	 	value="/WEB-INF/jsp/system/layout/bottom.jsp" />
+    </definition>
+    
+    <!-- 
+    	**************************************************
+        * 1-Column Page Layout(System)
+        **************************************************
+     -->
+     
+     <definition name="*/*" extends=".main">
+    	<put-attribute name="top"		 	value="/WEB-INF/jsp/system/layout/top.jsp" />
+    	<put-attribute name="breadcrumb"	value="/WEB-INF/jsp/system/layout/breadcrumb.jsp" />
+    	<put-attribute name="content"	 	value="/WEB-INF/jsp/{1}/{2}.jsp" />
+    	<put-attribute name="bottom"	 	value="/WEB-INF/jsp/system/layout/bottom.jsp" />
+    </definition>
+    
+    <!--
+        **************************************************
+        * Popup PageLayout definition
+        **************************************************
+    -->
+    <definition name=".popup" template="/WEB-INF/jsp/common/layout/popupLayout.jsp">
+    	<put-attribute name="css" 		value="popup" />
+        <put-attribute name="content" 	value="/WEB-INF/jsp/common/layout/empty.jsp" />
+    </definition>
+
+	<definition name=".systemPopup" template="/WEB-INF/jsp/common/layout/systemPopupLayout.jsp">
+    	<put-attribute name="css" 		value="popup" />
+        <put-attribute name="content" 	value="/WEB-INF/jsp/common/layout/empty.jsp" />
+    </definition>
+
+    <definition name="*/*/popup/*" extends=".popup">
+        <put-attribute name="content" 	value="/WEB-INF/jsp/{1}/{2}/popup/{3}.jsp" />
+    </definition>
+    
+    <definition name="common/system/mediaFileUploadForm" extends=".popup">
+    	<put-attribute name="content" 	value="/WEB-INF/jsp/common/system/mediaFileUploadForm.jsp" />
+    </definition>
+    
+    <definition name="common/system/upload" extends=".popup">
+    	<put-attribute name="content" 	value="/WEB-INF/jsp/common/system/upload.jsp" />
+    </definition>
+    
+    <!--
+        **************************************************
+        * Empty PageLayout definition
+        **************************************************
+    -->
+    <definition name=".empty" template="/WEB-INF/jsp/common/layout/emptyLayout.jsp">
+        <put-attribute name="top" 	value="/WEB-INF/jsp/common/layout/kpcCommonTop.jsp" />
+        <put-attribute name="bottom" 	value="/WEB-INF/jsp/system/layout/bottom.jsp" />
+        <put-attribute name="content" 	value="/WEB-INF/jsp/common/layout/empty.jsp" />
+    </definition>
+    
+    <definition name=".empty1" template="/WEB-INF/jsp/common/layout/emptyLayout1.jsp">
+        <put-attribute name="content" 	value="/WEB-INF/jsp/common/layout/empty.jsp" />
+    </definition>
+    
+    <definition name=".empty2" template="/WEB-INF/jsp/common/layout/emptyLayout2.jsp">
+        <put-attribute name="content" 	value="/WEB-INF/jsp/common/layout/empty.jsp" />
+    </definition>
+    
+    <definition name="*/print/*" template="/WEB-INF/jsp/common/layout/emptyLayout1.jsp">
+    	<put-attribute name="title" 		value="商百通-中小企业信息化一站式服务" />
+        <put-attribute name="content" 		value="/WEB-INF/jsp/{1}/print/{2}.jsp" />
+        <put-attribute name="css" 			value="print_BO" />
+    </definition>
+    
+    <!--
+        **************************************************
+        * Ajax PageLayout definition
+        **************************************************
+    -->
+    <definition name=".ajax" template="/WEB-INF/jsp/common/layout/ajaxLayout.jsp">
+        <put-attribute name="content" 	value="/WEB-INF/jsp/common/layout/empty.jsp" />
+    </definition>
+    
+    <definition name="*/ajax/*" extends=".ajax">
+        <put-attribute name="content" 	value="/WEB-INF/jsp/{1}/ajax/{2}.jsp" />
+    </definition>
+
+    <definition name="*/*/ajax/*" extends=".ajax">
+        <put-attribute name="content" 	value="/WEB-INF/jsp/{1}/{2}/ajax/{3}.jsp" />
+    </definition>
+    
+    <!-- 
+        **************************************************
+        * Error
+        **************************************************
+     -->
+    <definition name="common/errors/*" extends=".main">
+    	<put-attribute name="top"		 	value="/WEB-INF/jsp/system/layout/top.jsp" />
+    	<put-attribute name="breadcrumb"	value="" />
+    	<put-attribute name="content" 		value="/WEB-INF/jsp/common/errors/{1}.jsp" />
+    	<put-attribute name="bottom"	 	value="/WEB-INF/jsp/system/layout/bottom.jsp" />
+    </definition>
+    
+    <!-- 
+        **************************************************
+        * Mobile Page
+        **************************************************
+     -->
+     
+    <definition name=".main_mo" 	template="/WEB-INF/jsp/mobile/common/layout/mainLayout_mo.jsp">
+        <put-attribute name="title" 		value="商百通-中小企业信息化一站式服务" />
+        <put-attribute name="css" 			value="admin_MO" />
+    </definition>
+    
+    <!-- 
+        **************************************************
+        *	 Mobile common Pages
+        **************************************************
+     -->    
+    <definition name="mobile/common/*" template="/WEB-INF/jsp/mobile/common/layout/emptyLayout_mo.jsp">
+        <put-attribute name="title" 		value="商百通-中小企业信息化一站式服务" />    
+        <put-attribute name="top"		 	value="/WEB-INF/jsp/mobile/common/layout/kpcCommonTop_mo.jsp" />
+    	<put-attribute name="content"	 	value="/WEB-INF/jsp/mobile/common/{1}.jsp" />
+    	<put-attribute name="bottom"	 	value="/WEB-INF/jsp/mobile/common/layout/empty_mo.jsp" />
+    	<put-attribute name="css" 			value="admin_MO" />
+    </definition>
+    
+    <!-- 
+        **************************************************
+        *	 Mobile system Pages
+        **************************************************
+     -->        
+<!--     <definition name="mobile/*/*" extends=".main_mo">
+        <put-attribute name="top"		 	value="/WEB-INF/jsp/mobile/common/layout/top_mo.jsp" />
+        <put-attribute name="breadcrumb"	value="/WEB-INF/jsp/mobile/common/layout/breadcrumb.jsp" />
+    	<put-attribute name="left"		 	value="/WEB-INF/jsp/mobile/common/layout/left_mo.jsp" />
+    	<put-attribute name="content"	 	value="/WEB-INF/jsp/mobile/{1}/{2}.jsp" />
+    	<put-attribute name="bottom"	 	value="/WEB-INF/jsp/mobile/common/layout/bottom_mo.jsp" />
+    </definition>      -->  
+    
+	<definition name="mobile/*/*" extends=".main_mo">
+		<put-attribute name="top"		 	value="/WEB-INF/jsp/mobile/common/layout/top_mo.jsp" />
+        <put-attribute name="breadcrumb"	value="/WEB-INF/jsp/mobile/common/layout/empty_mo.jsp" />
+    	<put-attribute name="left"		 	value="/WEB-INF/jsp/mobile/common/layout/sidebar.jsp" />
+    	<put-attribute name="content"	 	value="/WEB-INF/jsp/mobile/{1}/{2}.jsp" />
+    	<put-attribute name="footer"		value="/WEB-INF/jsp/mobile/common/layout/footer_mo.jsp" />
+    	<put-attribute name="bottom"	 	value="/WEB-INF/jsp/mobile/common/layout/bottom_mo.jsp" />
+    </definition>    
+       
+</tiles-definitions>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="comment">
+
+	<typeAlias alias="commentModel" type="com.kpc.eos.model.userPage.CommentModel" />
+	<typeAlias alias="commentPicModel" type="com.kpc.eos.model.userPage.CommentPicModel" />
+	
+	<select id="getCommentCount" resultClass="Integer">
+		SELECT
+				COUNT(*)
+		FROM
+				EOS_COMMENT_NEW
+		WHERE
+				HOST_ID = #hostId# AND
+				CTYPE = #commentType#
+				<isNotEmpty property="itemId" prepend="AND">
+					ITEM_ID = #itemId#
+	 			</isNotEmpty>
+	</select>
+	
+	<select id="getLastCommentId" resultClass="String">
+		SELECT	CONCAT('CMMT', LPAD(CONV(IFNULL(SUBSTRING(MAX(t.COMMENT_ID), -11), 0), 10, 10) + 1, 11, '0'))
+		FROM 	EOS_COMMENT_NEW t ORDER BY t.COMMENT_ID DESC LIMIT 1
+	</select>
+	
+	<select id="getLastCommentPicId" resultClass="String">
+		SELECT 	CONCAT('CMMP', LPAD(CONV(IFNULL(SUBSTRING(MAX(t.COMMENT_PIC_ID), -11), 0), 10, 10) + 1, 11, '0'))
+		FROM 	EOS_COMMENT_PIC_NEW t ORDER BY t.COMMENT_PIC_ID DESC LIMIT 1
+	</select>
+	
+	<!-- Comment -->
+	
+	<select id="getComment" resultClass="commentModel">
+		SELECT
+					C.COMMENT_ID AS commentId,
+					C.HOST_ID AS hostId,
+					C.CTYPE AS commentType,
+					C.ITEM_ID AS itemId,
+					C.CNAME AS commentName,
+					C.CTEXT AS commentText,
+					C.UPPER_ID AS upperId,
+					C.CREATE_DATE AS createDate,
+					C.UPDATE_BY AS createBy,
+					C.CREATE_DATE AS updateDate,
+					C.UPDATE_BY AS updateBy,
+					C.AVATAR_IMG_PATH AS avatarImgPath,
+					U.CNAME AS upperName,
+					U.CTEXT AS upperText
+		FROM		EOS_COMMENT_NEW C
+		LEFT JOIN 	EOS_COMMENT_NEW U
+		ON			C.UPPER_ID = U.COMMENT_ID
+		WHERE
+					C.HOST_ID = #hostId# AND
+					C.CTYPE = #commentType#
+					<isNotEmpty property="itemId" prepend="AND">
+						C.ITEM_ID = #itemId#   	
+		 			</isNotEmpty>
+		ORDER BY 	C.CREATE_DATE DESC
+	</select>
+	
+	<select id="getCommentById" resultClass="commentModel">
+		SELECT
+					C.COMMENT_ID AS commentId,
+					C.HOST_ID AS hostId,
+					C.CTYPE AS commentType,
+					C.ITEM_ID AS itemId,
+					C.CNAME AS commentName,
+					C.CTEXT AS commentText,
+					C.UPPER_ID AS upperId,
+					C.CREATE_DATE AS createDate,
+					C.UPDATE_BY AS createBy,
+					C.CREATE_DATE AS updateDate,
+					C.UPDATE_BY AS updateBy,
+					C.AVATAR_IMG_PATH AS avatarImgPath
+		FROM		EOS_COMMENT_NEW C
+		WHERE		C.COMMENT_ID = #commentId#
+	</select>
+	
+	<insert id="insertComment">
+		INSERT INTO EOS_COMMENT_NEW (COMMENT_ID, CREATE_DATE, UPDATE_DATE, CREATE_BY, UPDATE_BY,
+			HOST_ID, CTYPE, ITEM_ID, CNAME, CTEXT, UPPER_ID) 
+		VALUES (
+			eos.get_tbl_next_id_value('eos_comment_new'), 
+			 DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+			#createBy#, #updateBy#, #hostId#, #commentType#, #itemId#, #commentName#, #commentText#, #upperId#)
+	</insert>
+	
+	<delete id="deleteComment">
+		DELETE
+		FROM	EOS_COMMENT_NEW
+		WHERE	COMMENT_ID = #commentId#
+	</delete>
+	
+	<!-- Comment Pic -->
+	
+	<select id="getCommentPic" resultClass="commentPicModel">
+		SELECT
+				COMMENT_PIC_ID AS commentPicId,
+				COMMENT_ID AS commentId,
+				COMMENT_IMG_PATH AS commentImgPath
+		FROM
+				EOS_COMMENT_PIC_NEW
+		WHERE
+				COMMENT_ID = #commentId#
+	</select>
+	
+	<insert id="insertCommentPic">
+		INSERT INTO EOS_COMMENT_PIC_NEW (COMMENT_PIC_ID, COMMENT_ID, COMMENT_IMG_PATH)
+		VALUES (
+			eos.get_tbl_next_id_value('eos_comment_pic_new'),
+			#commentId#, #commentImgPath#)
+	</insert>
+	
+	<delete id="deleteCommentPic">
+		DELETE 
+		FROM 	EOS_COMMENT_PIC_NEW
+		WHERE	COMMENT_ID = #commentId#
+	</delete>
+	
+</sqlMap>

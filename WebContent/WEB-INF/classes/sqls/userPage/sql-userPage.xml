@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="userPage">
+
+	<typeAlias alias="shopCartModel" type="com.kpc.eos.model.userPage.ShopCartModel" />
+	<typeAlias alias="infoLinkModel" type="com.kpc.eos.model.userPage.InfoLinkModel" />
+	
+	<!-- Info Link -->
+	<resultMap id="shopCartResult" class="shopCartModel">
+		<result property="shopCartId" column="SHOPCART_ID" />
+		<result property="cookieId" column="COOKIE_ID" />
+		<result property="hostId" column="HOST_ID" />
+		<result property="itemId" column="ITEM_ID" />
+		<result property="qty" column="QTY" />				
+	</resultMap>
+	
+	<select id="getShopCart" resultMap="shopCartResult">
+		SELECT	*
+		FROM	EOS_SHOPCART_NEW
+		WHERE	COOKIE_ID = #cookieId# AND				
+				HOST_ID = #hostId# AND			 
+				ITEM_ID = #itemId#
+	</select>
+	
+	<select id="getShopCartList" resultMap="shopCartResult">
+		SELECT	*
+		  FROM	EOS_SHOPCART_NEW
+		 WHERE	COOKIE_ID = #cookieId# 
+		 		AND qty > 0
+				<isNotEmpty prepend="and" property="hostId">
+					HOST_ID = #hostId#
+				</isNotEmpty>
+	  ORDER BY  host_id, item_id				
+	</select>
+	
+	<select id="getQtyTotalInCart" resultClass="integer">
+		SELECT	sum(qty) as qty
+		FROM	EOS_SHOPCART_NEW
+		WHERE	COOKIE_ID = #cookieId#				
+				<isNotEmpty prepend="and" property="hostId">
+					HOST_ID = #hostId#
+				</isNotEmpty>
+	</select>
+	
+	<insert id="insertShopCart">
+		INSERT INTO EOS_SHOPCART_NEW (SHOPCART_ID, COOKIE_ID, HOST_ID, ITEM_ID, QTY) 
+		VALUES (
+			get_tbl_next_id_value('eos_shopcart_new'), 
+			#cookieId#, #hostId#, #itemId#, #qty#)
+	</insert>
+	
+	<update id="updateShopCart">
+		UPDATE	EOS_SHOPCART_NEW
+		SET
+		   		qty		= #qty#
+		WHERE
+				COOKIE_ID = #cookieId# AND				
+				HOST_ID = #hostId# AND 
+				ITEM_ID = #itemId#
+	</update>
+	
+	<delete id="deleteShopCart">
+		DELETE
+		FROM	EOS_SHOPCART_NEW
+		WHERE
+				COOKIE_ID = #cookieId#
+				<isNotEmpty prepend="and" property="hostId">
+					HOST_ID = #hostId#
+				</isNotEmpty>			 
+				<isNotEmpty prepend="and" property="itemId">
+					ITEM_ID = #itemId#
+				</isNotEmpty>			 
+	</delete>	
+	
+	<!-- Info Link -->
+	<select id="getInfoLinkList" resultClass="infoLinkModel">
+		SELECT
+					bill_id AS billId, 
+					host_user_id AS hostUserId, 
+					bill_type AS billType, 
+					itype AS infoType, 
+					info, 
+					picnum AS picType,	
+					create_date AS createDate
+		FROM
+					eos_bill_head_new
+		WHERE
+					host_user_id = #hostUserId# AND
+					bill_type = #billType# AND
+					itype = #infoType#
+		ORDER BY
+					create_date DESC		
+		LIMIT
+					#infoNum#
+	</select>
+	
+	<select id="getInfoLinkPicList" resultClass="String">
+		SELECT
+			url
+		FROM
+			eos_info_detail_new	
+		WHERE
+			bill_id = #billId#
+		LIMIT	3
+	</select>
+	
+</sqlMap>

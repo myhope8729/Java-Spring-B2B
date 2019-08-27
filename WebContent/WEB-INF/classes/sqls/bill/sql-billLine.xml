@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="billLine">
+
+	<typeAlias alias="billLineNoStock" type="com.kpc.eos.model.bill.BillLineNoStockModel" />
+	<typeAlias alias="billLine" type="com.kpc.eos.model.bill.BillLineModel" />
+	<typeAlias alias="vendor" type="com.kpc.eos.model.bill.VendorModel" />
+	
+	<select id="selectBillLineTest" resultClass="string">
+		select sum($bill_id$) from eos_bill_line_nostock_new;
+	</select>
+	
+	<delete id="deleteNoStockItemsByBillId">
+		DELETE  FROM eos_bill_line_nostock_new WHERE  bill_id = #billId#
+	</delete>
+	
+	<insert id="insertBillLineNoStock">
+		INSERT INTO eos_bill_line_nostock_new
+		(
+			bill_id,
+			item_id,
+			rbill_id,
+			store_id,
+			cost,
+			price,
+			price2,
+			qty,
+			qty2,
+			tot,
+			tot2,
+			js_qty,
+			js_yn,
+			note,
+			create_date,
+			create_by,
+			update_date,
+			update_by
+		)
+		VALUES
+		(
+			#billId#,
+			#itemId#,
+			#rbillId#,
+			#storeId#,
+			#cost#,
+			#price#,
+			#price2#,
+			#qty#,
+			#qty2#,
+			#tot#,
+			#tot2#,
+			#jsQty#,
+			#jsYn#,
+			#note#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#updateBy# 
+		)
+	</insert>
+	
+	<insert id="insertBillLine">
+		INSERT INTO eos_bill_line_new
+		(
+			bill_id,
+			item_id,
+			rbill_id,
+			store_id,
+			cost,
+			last_price_in,
+			price,
+			price2,
+			qty,
+			qty2,
+			tot,
+			tot2,
+			js_display,
+			js_qty,
+			vendor_id,
+			note,
+			create_date,
+			create_by,
+			update_date,
+			update_by
+		)
+		VALUES
+		(
+			#billId#,
+			#itemId#,
+			#rbillId#,
+			#storeId#,
+			#cost#,
+			#priceIn#,
+			#price#,
+			#price2#,
+			#qty#,
+			#qty2#,
+			#tot#,
+			#tot2#,
+			#jsDisplay#,
+			#jsQty#,
+			#vendorId#,
+			#note#,
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#createBy#, 
+			DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+			#updateBy# 
+		)
+	</insert>
+	
+	<delete id="deleteBillLineByBillId">
+		DELETE  FROM eos_bill_line_new WHERE  bill_id = #billId#
+	</delete>
+	
+	<update id="updateBillLine">
+		UPDATE  eos_bill_line_new
+		   SET  price2 		= #price2#,
+		   		qty2 		= #qty2#,
+		   		tot2		= #tot2#,
+		   		js_qty		= #jsQty#,
+		   		js_display	= #jsDisplay#,
+		   		note 		= #note#,
+		   		update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 
+				update_by 	= #updateBy#
+		 WHERE  bill_id = #billId#
+		   AND 	item_id = #itemId#
+	</update>
+	
+	<update id="updateBillLineCost">
+		UPDATE  eos_bill_line_new
+		   SET  cost = #cost#,
+		   		last_price_in = #lastPriceIn#
+		 WHERE  bill_id = #billId#
+		   AND  item_id = #itemId#
+	</update>
+	
+	<select id="getBillItemList" resultClass="billLine">
+		SELECT  ui.c1						AS c1,
+			    ui.c2						AS c2,
+			    ui.c3						AS c3,
+			    ui.c4						AS c4,
+			    ui.c5						AS c5,
+			    ui.c6						AS c6,
+			    ui.c7						AS c7,
+			    ui.c8						AS c8,
+			    ui.c9						AS c9,
+			    ui.c10						AS c10,
+			    ui.c11						AS c11,
+			    ui.c12						AS c12,
+			    ui.c13						AS c13,
+			    ui.c14						AS c14,
+			    ui.c15						AS c15,
+			    ui.c16						AS c16,
+			    ui.c17						AS c17,
+			    ui.c18						AS c18,
+			    ui.c19						AS c19,
+			    ui.c20						AS c20,
+			    ui.cost						AS cost,
+			    a.last_price_in				AS priceIn,
+			    a.price						AS price,
+			    a.price2					AS price2,
+			    a.qty						AS qty,
+			    a.qty2						AS qty2,
+			    a.tot						AS tot,
+			    a.tot2						AS tot2,
+			    IFNULL(a.js_display, '')	AS jsDisplay,
+			    IFNULL(a.js_qty, 0.00)		AS jsQty,
+			    a.note						AS note,
+			    ui.item_img_path			AS itemImgPath,
+			    ui.item_id					AS itemId,
+			    IF(ui.weight is null || ui.weight = '', "0.00", ui.weight)	AS weight,
+			    IF(ui.volumn is null || ui.volumn = '', "0.00", ui.volumn)	AS volumn
+		  FROM  eos_user_item_new ui,
+		  		eos_bill_line_new a,
+		  		eos_bill_head_new b
+		 WHERE  b.bill_id = #billId#
+		   AND  ui.user_id = #userId#
+		   AND  ui.state = 'ST0001'
+		   AND  a.bill_id = b.bill_id
+		   AND  a.item_id = ui.item_id
+		<isEqual prepend="AND" property="itemYn" compareValue="Y">
+				ui.vendor_id = #userId#
+		</isEqual>
+		 ORDER BY ui.item_id
+	</select>
+	
+	<select id="getVendorListOfBillLineByBillId" resultClass="vendor">
+		SELECT  vendor_id			AS userId,
+				user_no				AS userNo,
+			    user_name			AS userName
+		  FROM  eos_bill_line_new a,
+		  		eos_user_new b
+		 WHERE  a.vendor_id = b.user_id
+		   AND  a.bill_id = #billId#
+		 GROUP BY vendor_id
+	</select>
+	
+	<select id="checkItemPriceExists" resultClass="string">
+		SELECT  'Y'				AS yFlag
+		  FROM 	eos_custprice_new
+		 WHERE 	host_user_id = #hostUserId#
+		   AND	cust_user_id = #custUserId#
+		   AND  item_id 	 = #itemId#
+	</select>
+	
+	<insert id="insertCustPrice">
+		INSERT INTO eos_custprice_new
+			(
+				host_user_id,			cust_user_id,			item_id,				price,				state,
+				create_date,			create_by,				update_date,			update_by
+			)
+			VALUES
+			(
+				#hostUserId#,			#custUserId#,			#itemId#,				#price#,			'ST0001',
+				DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), #createBy#,	DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'), 	#updateBy#
+			)
+	</insert>
+	
+	<update id="updateCustPrice">
+		UPDATE	eos_custprice_new
+		   SET  price = #price#,
+		   		update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		update_by = #updateBy#
+		 WHERE  host_user_id = #hostUserId#
+		   AND	cust_user_id = #custUserId#
+		   AND  item_id		 = #itemId#
+	</update>
+	
+	<update id="updateBillLineByPrice">
+		UPDATE	eos_bill_line_new bl,
+				eos_bill_head_new bh
+		   SET  bl.price2 = #price2#,
+		   		bl.tot2 = #price2# * bl.qty2,
+		   		bl.update_date = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%S'),
+		   		bl.update_by = #updateBy#
+		 WHERE  bh.bill_id 	= bl.bill_id
+		   AND	bl.item_id	= #itemId#
+		   AND  bh.pricecol = #c20#
+		   AND  bh.bill_type = 'DT0004'
+		   AND  bh.state  <![CDATA[<>]]> 'WS0002'
+	</update>
+	
+	<select id="getBillItemsTotal" resultClass="billLine">
+		SELECT  SUM(qty2)		AS	itemsTotalQty,
+				SUM(tot2)		AS	itemsTotalAmt
+		  FROM  eos_user_item_new ui,
+		  		eos_bill_line_new a,
+		  		eos_bill_head_new b
+		 WHERE  b.bill_id = #billId#
+		   AND  ui.user_id = #userId#
+		   AND  ui.state = 'ST0001'
+		   AND  a.bill_id = b.bill_id
+		   AND  a.item_id = ui.item_id
+		<isEqual prepend="AND" property="itemYn" compareValue="Y">
+				ui.vendor_id = #userId#
+		</isEqual>
+	</select>
+</sqlMap>
